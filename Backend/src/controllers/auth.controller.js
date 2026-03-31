@@ -1,15 +1,16 @@
 import asyncHandler from "express-async-handler";
-import User from "../models/User.js";
+import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
-import {generateAccessToken, generateRefreshToken, generateEmailVerifyToken, verifyToken} from "../utils/tokenUtils.js";
-import { sendVerificationEmail } from "../utils/emailService.js";
+import crypto from "crypto";
+import tokenUtils from "../utils/gererateToken.js";
+import sendemail from "../utils/sendemail.js";
 import { COOKIE_OPTIONS } from "../constants.js";
 
 
 const issueTokens = async (user, res) => {
-  const accessToken = generateAccessToken(user._id);
-  const refreshToken = generateRefreshToken(user._id);
+  const accessToken = tokenUtils.generateAccessToken(user._id);
+  const refreshToken = tokenUtils.generateRefreshToken(user._id);
 
   // Persist hashed refresh token in DB
   user.refreshToken = refreshToken;
@@ -43,9 +44,9 @@ const signup = asyncHandler(async (req, res) => {
   const user = await User.create({ name, email, password });
 
   // Send verification email
-  const verifyToken_ = generateEmailVerifyToken(user._id);
+  const verifyToken_ = tokenUtils.generateEmailVerifyToken(user._id);
   try {
-    await sendVerificationEmail(email, name, verifyToken_);
+    await sendemail.sendVerificationEmail(email, name, verifyToken_);
   } catch (emailErr) {
     console.error("Email send failed:", emailErr.message);
     // Don't block signup if email fails – user can request resend
@@ -67,7 +68,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
   let decoded;
   try {
-    decoded = verifyToken(token, process.env.EMAIL_VERIFY_SECRET);
+    decoded = tokenUtils.verifyToken(token, process.env.EMAIL_VERIFY_SECRET);
   } catch {
     throw new ApiError(400, "Invalid or expired verification link.");
   }
@@ -102,11 +103,56 @@ const resendVerification = asyncHandler(async (req, res) => {
   }
 
   const verifyToken_ = generateEmailVerifyToken(user._id);
-  await sendVerificationEmail(email, user.name, verifyToken_);
+  await sendemail.sendVerificationEmail(email, user.name, verifyToken_);
 
   return res
     .status(200)
     .json(new ApiResponse(200, null, "Verification email resent."));
+});
+
+
+// Forgot password — generate reset token and email the user
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new ApiError(400, "Email is required.");
+
+  const user = await User.findOne({ email });
+  if (!user) throw new ApiError(404, "No account found with this email.");
+
+  // create reset token (plain) and store hashed version
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const hashed = crypto.createHash("sha256").update(resetToken).digest("hex");
+  user.passwordResetToken = hashed;
+  user.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+  await user.save({ validateBeforeSave: false });
+
+  await sendemail.sendPasswordResetEmail(email, user.name, resetToken);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Password reset email sent if the account exists."));
+});
+
+
+// Reset password using token
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword) throw new ApiError(400, "Token and new password are required.");
+
+  const hashed = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await User.findOne({
+    passwordResetToken: hashed,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) throw new ApiError(400, "Invalid or expired password reset token.");
+
+  user.password = newPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  return res.status(200).json(new ApiResponse(200, null, "Password has been reset. You can now sign in."));
 });
 
 
@@ -171,7 +217,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
   let decoded;
   try {
-    decoded = verifyToken(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+    decoded = tokenUtils.verifyToken(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
   } catch {
     throw new ApiError(401, "Invalid or expired refresh token.");
   }
@@ -199,6 +245,8 @@ export default  {
   signup,
   verifyEmail,
   resendVerification,
+  forgotPassword,
+  resetPassword,
   login,
   logout,
   refreshAccessToken,
