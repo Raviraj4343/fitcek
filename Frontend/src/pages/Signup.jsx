@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import api from '../utils/api'
 import '../styles/global.css'
 import Brand from '../components/Brand'
 
@@ -19,8 +20,16 @@ export default function Signup(){
     setError(null)
     if(password !== confirm){ setError('Passwords do not match'); return }
     setLoading(true)
-    // TODO: call signup API; placeholder flow
-    setTimeout(()=>{ setLoading(false); navigate('/dashboard') }, 700)
+    try{
+      await api.signup({ name, email, password })
+      setLoading(false)
+      setError(null)
+      // Inform user to verify email
+      navigate('/auth', { state: { message: 'Account created. Please check your email and verify before signing in.' } })
+    }catch(err){
+      setError(err.payload?.message || err.message || 'Signup failed')
+      setLoading(false)
+    }
   }
 
   return (

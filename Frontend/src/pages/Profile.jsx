@@ -11,12 +11,16 @@ const DIETS = ['veg','non_veg','mixed']
 
 export default function Profile(){
   const { user, refresh } = useAuth() || {}
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [avatarPreview, setAvatarPreview] = useState(null)
+  const [uploading, setUploading] = useState(false)
   const [form, setForm] = useState({ age:'', gender:'male', heightCm:'', weightKg:'', bodyFatPercent:'', goal:'maintain', activityLevel:'moderate', dietPreference:'mixed' })
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
 
   useEffect(()=>{
     if (user){
+      setAvatarPreview(user.avatarUrl || null)
       setForm({
         age: user.age ?? '',
         gender: user.gender ?? 'male',
@@ -59,6 +63,28 @@ export default function Profile(){
     }finally{ setSaving(false) }
   }
 
+  const handleAvatarChange = (f) =>{
+    if(!f) return
+    setAvatarFile(f)
+    try{
+      const url = URL.createObjectURL(f)
+      setAvatarPreview(url)
+    }catch(e){}
+  }
+
+  const uploadAvatar = async () =>{
+    if(!avatarFile) return alert('Choose a file first')
+    setUploading(true)
+    try{
+      await api.uploadAvatar(avatarFile)
+      await refresh()
+      alert('Avatar uploaded')
+      setAvatarFile(null)
+    }catch(err){
+      alert(err.payload?.message || err.message || 'Upload failed')
+    }finally{ setUploading(false) }
+  }
+
   return (
     <div className="page profile">
       <div className="page-top">
@@ -67,6 +93,17 @@ export default function Profile(){
       </div>
 
       <div className="card profile-card">
+        <div style={{display:'flex',gap:16,alignItems:'center',marginBottom:12}}>
+          <div style={{width:84,height:84,borderRadius:999,overflow:'hidden',background:'rgba(0,0,0,0.04)'}}>
+            {avatarPreview ? <img src={avatarPreview} alt="avatar" style={{width:'100%',height:'100%',objectFit:'cover'}} /> : <div style={{width:'100%',height:'100%'}} />}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            <input id="avatar" type="file" accept="image/*" onChange={e=>handleAvatarChange(e.target.files[0])} />
+            <div>
+              <Button onClick={uploadAvatar} disabled={uploading || !avatarFile}>{uploading ? 'Uploading...' : 'Upload avatar'}</Button>
+            </div>
+          </div>
+        </div>
         {!user?.profileCompleted ? (
           <form className="profile-form" onSubmit={handleSubmit} noValidate>
             <Input label="Age" type="number" value={form.age} onChange={e=>handleChange('age', Number(e.target.value))} className={errors.age ? 'error' : ''} />

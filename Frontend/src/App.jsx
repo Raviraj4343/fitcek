@@ -1,5 +1,5 @@
-import React from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
@@ -16,6 +16,19 @@ import Foods from './pages/Foods'
 import Insights from './pages/Insights'
 
 export default function App(){
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(()=>{
+    try{
+      const seen = localStorage.getItem('aqtev_seen')
+      if(!seen && location.pathname === '/'){
+        localStorage.setItem('aqtev_seen', '1')
+        navigate('/signin', { replace: true })
+      }
+    }catch(e){/* ignore */}
+  }, [location.pathname, navigate])
+
   return (
     <Layout>
       <Routes>

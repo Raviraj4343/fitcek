@@ -190,3 +190,12 @@ a:hover{color:var(--color-accent);text-decoration:underline}
   .btn-primary, .btn-ghost{width:100%}
 }
 
+  /* Auth links on left of topbar */
+  .auth-left{display:flex;align-items:center;gap:8px}
+  .nav-auth-link{color:var(--color-primary);font-weight:600;text-decoration:none;padding:8px 10px;border-radius:8px}
+  .nav-auth-link:hover{background:rgba(6,104,96,0.03)}
+
+  @media (max-width:800px){
+    .auth-left{display:none}
+  }
+

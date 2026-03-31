@@ -8,11 +8,15 @@ import '../styles/global.css'
 import Brand from '../components/Brand'
 
 export default function SignIn(){
+  const auth = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [showResend, setShowResend] = useState(false)
+  const [resendEmail, setResendEmail] = useState('')
   const navigate = useNavigate()
+
   async function handleSubmit(e){
     e.preventDefault()
     setError(null)
@@ -23,11 +27,17 @@ export default function SignIn(){
       navigate('/dashboard')
     }catch(err){
       setLoading(false)
-      setError(err.payload?.message || err.message || 'Sign in failed')
+      // If backend indicates email not verified, show helpful message and offer resend
+      const status = err.status || err.payload?.statusCode
+      if(status === 403 || (err.payload && /verify/i.test(err.payload.message || ''))){
+        setError(null)
+        // show inline resend UI
+        setShowResend(true)
+      } else {
+        setError(err.payload?.message || err.message || 'Sign in failed')
+      }
     }
   }
-
-  const auth = useAuth()
 
   return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
@@ -40,6 +50,23 @@ export default function SignIn(){
           <Input id="si-password" label="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
 
           {error && <div style={{color: 'var(--color-danger)', marginTop:8}}>{error}</div>}
+
+          {showResend && (
+            <div style={{marginTop:10}}>
+              <div style={{color:'var(--color-muted)',marginBottom:8}}>Your email isn't verified yet. Enter your email to resend verification.</div>
+              <div style={{display:'flex',gap:8}}>
+                <Input id="resend-email" label="Email to resend" type="email" value={resendEmail || email} onChange={e=>setResendEmail(e.target.value)} />
+                <Button type="button" onClick={async ()=>{
+                  try{
+                    await api.resendVerification(resendEmail || email)
+                    alert('Verification email resent — check your inbox')
+                  }catch(err){
+                    alert(err.payload?.message || err.message || 'Unable to resend')
+                  }
+                }} className="btn-ghost">Resend</Button>
+              </div>
+            </div>
+          )}
 
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
             <label style={{color:'var(--color-muted)',fontSize:13}}><input type="checkbox"/> Remember me</label>
