@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import '../styles/global.css'
+import Brand from '../components/Brand'
 
 export default function SignIn(){
   const [email, setEmail] = useState('')
@@ -31,7 +32,7 @@ export default function SignIn(){
   return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
       <div style={{width:'100%',maxWidth:420,padding:12}}>
-        <h2>Sign in to AQTEV</h2>
+        <h2>Sign in to <Brand textOnly inline /></h2>
         <p style={{color:'var(--color-muted)'}}>Enter your credentials to access your dashboard.</p>
 
         <form onSubmit={handleSubmit} style={{marginTop:16}}>

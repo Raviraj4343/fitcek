@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import '../styles/global.css'
+import Brand from '../components/Brand'
 
 export default function Signup(){
   const [name, setName] = useState('')
@@ -26,7 +27,7 @@ export default function Signup(){
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
       <div style={{width:'100%',maxWidth:480,padding:12}}>
         <h2>Create your account</h2>
-        <p style={{color:'var(--color-muted)'}}>Start your free trial and explore AQTEV.</p>
+        <p style={{color:'var(--color-muted)'}}>Start your free trial and explore <Brand textOnly inline />.</p>
 
         <form onSubmit={handleSubmit} style={{marginTop:16}}>
           <Input id="su-name" label="Full name" value={name} onChange={e=>setName(e.target.value)} required />

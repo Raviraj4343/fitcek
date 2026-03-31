@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import logo from '../logo/app_logo.png'
 import { useAuth } from '../contexts/AuthContext'
+import Brand from './Brand'
 
 export default function Navbar({ onToggleSidebar }){
   const { user, loading, logout } = useAuth() || {}
@@ -10,7 +10,7 @@ export default function Navbar({ onToggleSidebar }){
     <header className="topbar">
       <div className="container topbar-container">
         <div className="topbar-left">
-          <div className="brand"><Link to="/"><img src={logo} alt="AQTEV" className="app-logo" /><span className="brand-text ml">AQTEV</span></Link></div>
+          <div className="topbrand"><Brand to="/" /></div>
         </div>
         <div className="topbar-right">
           {!loading && user ? (
