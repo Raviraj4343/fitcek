@@ -1,13 +1,14 @@
-:root {
-  /* Color palette */
-  --color-primary: #2563EB;
-  --color-primary-600: #1D4ED8;
-  --color-secondary: #22C55E;
-  --color-bg: #F8FAFC;
-  --color-surface: #FFFFFF;
-  --color-muted: #6B7280;
-  --color-text: #0F172A;
-  --color-success: #16A34A;
+:root{
+  /* Elegant health-oriented palette */
+  --color-primary: #0B766E;       /* deep teal */
+  --color-primary-600: #06686A;   /* darker teal */
+  --color-secondary: #10B981;     /* fresh emerald */
+  --color-accent: #06B6D4;        /* aqua accent for highlights */
+  --color-bg: #F6FBF9;           /* very light greenish background */
+  --color-surface: #FFFFFF;      /* cards / surfaces */
+  --color-muted: #64748B;        /* slate-muted text */
+  --color-text: #0B1F24;         /* deep near-black with green hint */
+  --color-success: #059669;
   --color-danger: #DC2626;
 
   /* Spacing scale */
@@ -18,32 +19,33 @@
   --space-md: 24px;
   --space-lg: 32px;
 
-  /* Radii */
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 16px;
+  /* Radii (softer rounded corners) */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 20px;
 
-  /* Elevation */
-  --shadow-1: 0 6px 18px rgba(2,6,23,0.06);
-  --shadow-2: 0 2px 8px rgba(2,6,23,0.04);
+  /* Elevation - subtle, elegant */
+  --shadow-1: 0 10px 30px rgba(11,31,36,0.06);
+  --shadow-2: 0 6px 20px rgba(11,31,36,0.04);
+  --shadow-md: 0 2px 10px rgba(11,31,36,0.06);
 
   /* Layout */
   --sidebar-width: 240px;
   --topbar-height: 64px;
 
   /* Focus */
-  --focus-ring: rgba(37,99,235,0.16);
+  --focus-ring: rgba(6,104,96,0.18);
 
   /* Typography */
   --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  --fs-xxl: 32px;
-  --fs-xl: 24px;
-  --fs-lg: 20px;
+  --fs-xxl: 34px;
+  --fs-xl: 22px;
+  --fs-lg: 18px;
   --fs-base: 16px;
   --fs-sm: 13px;
 
-  /* Compatibility aliases (preserve older variable names) */
-  --accent: var(--color-primary);
+  /* Compatibility aliases */
+  --accent: var(--color-accent);
   --accent-600: var(--color-primary-600);
   --primary: var(--color-primary);
   --primary-600: var(--color-primary-600);

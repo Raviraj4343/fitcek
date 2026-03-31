@@ -12,7 +12,6 @@ export default function SignIn(){
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const navigate = useNavigate()
-
   async function handleSubmit(e){
     e.preventDefault()
     setError(null)
