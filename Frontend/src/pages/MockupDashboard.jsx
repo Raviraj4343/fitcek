@@ -1,6 +1,7 @@
 import React from 'react'
 import Card from '../components/ui/Card'
 import '../styles/global.css'
+import logo from '../logo/app_logo.png'
 
 export default function MockupDashboard(){
   const stats = [
@@ -11,7 +12,7 @@ export default function MockupDashboard(){
   return (
     <div className="app-root">
       <aside className="sidebar">
-        <div className="brand">AQTEV</div>
+        <div className="brand"><img src={logo} alt="AQTEV" className="app-logo" /><div className="brand-text">AQTEV</div></div>
       </aside>
       <div className="main-area">
         <header className="topbar">

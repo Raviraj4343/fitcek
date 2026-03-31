@@ -1,4 +1,5 @@
 import React from 'react'
+import logo from '../logo/app_logo.png'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -22,7 +23,7 @@ export default function Sidebar({ isOpen = false, onClose }){
 
   return (
     <aside className={cls.join(' ')} aria-hidden={!isOpen && window.innerWidth < 900}>
-      <div className="brand">AQTEV</div>
+      <div className="brand"><img src={logo} alt="AQTEV" className="app-logo" /><div className="brand-text">AQTEV</div></div>
       <nav className="nav">
         {baseItems.map(item => (
           <NavLink key={item.to} to={item.to} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'} onClick={onClose}>

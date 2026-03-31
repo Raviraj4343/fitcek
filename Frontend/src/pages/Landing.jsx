@@ -1,7 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../components/ui/Button'
-import Card from '../components/ui/Card'
 import '../styles/global.css'
 
 export default function Landing(){

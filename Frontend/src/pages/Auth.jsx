@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import api from '../utils/api'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import logo from '../logo/app_logo.png'
 
 export default function Auth(){
   const [email, setEmail] = useState('')
@@ -15,7 +16,7 @@ export default function Auth(){
     <div className="auth-root">
       <div className="auth-split">
         <div className="auth-panel auth-form">
-          <div className="auth-brand">AQTEV</div>
+          <div className="auth-brand"><img src={logo} alt="AQTEV" className="app-logo" style={{height:48}}/></div>
           <h2>Welcome back</h2>
           <p className="muted">Sign in to continue to your account.</p>
 

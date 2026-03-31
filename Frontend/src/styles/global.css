@@ -78,6 +78,23 @@ a:hover{color:var(--color-accent);text-decoration:underline}
 .topbar .brand{font-weight:800;font-size:18px;color:var(--color-primary);letter-spacing:0.2px}
 .topbar .brand a{color:var(--color-primary);text-decoration:none}
 
+/* App logo sizing and brand layout */
+.app-logo{height:40px;width:auto;display:inline-block;vertical-align:middle}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-text{font-weight:800;font-size:16px;color:var(--color-primary)}
+.ml{margin-left:8px}
+.auth-brand .app-logo{height:48px}
+
+/* Responsive logo behavior to avoid overflow */
+@media (max-width:800px){
+  .app-logo{height:34px}
+  .brand-text{display:none}
+  .topbar .container{padding:0 12px}
+}
+@media (max-width:480px){
+  .app-logo{height:28px}
+}
+
 .content-area{padding:var(--space-md);min-height:calc(100vh - var(--topbar-height))}
 .page h1{margin:0 0 16px 0;font-size:var(--fs-lg)}
 
