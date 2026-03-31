@@ -102,7 +102,7 @@ const resendVerification = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, null, "Email is already verified."));
   }
 
-  const verifyToken_ = generateEmailVerifyToken(user._id);
+  const verifyToken_ = tokenUtils.generateEmailVerifyToken(user._id);
   await sendemail.sendVerificationEmail(email, user.name, verifyToken_);
 
   return res
@@ -241,7 +241,7 @@ const getMe = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, req.user, "User fetched successfully."));
 });
 
-export default  {
+export {
   signup,
   verifyEmail,
   resendVerification,
