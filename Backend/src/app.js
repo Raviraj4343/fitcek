@@ -10,6 +10,7 @@ import { notFound, errorHandler } from "./middleware/error.middleware.js";
 // ── Route imports ──────────────────────────────────────
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
+import foodRoutes from "./routes/food.route.js";
 
 
 
@@ -67,7 +68,7 @@ app.use(express.static("public"));
 app.get("/health", (_req, res) => {
   res.status(200).json({
     success: true,
-    message: "🏃 Health Tracker API is running",
+    message: "🏃 Health Tracker is running",
     env: process.env.NODE_ENV,
     timestamp: new Date().toISOString(),
   });
@@ -78,6 +79,7 @@ const API = "/api/v1";
 
 app.use(`${API}/auth`, authLimiter, authRoutes);
 app.use(`${API}/user`, userRoutes);
+app.use(`${API}/food`, foodRoutes);
 
 
 
