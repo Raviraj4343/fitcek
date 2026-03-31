@@ -126,7 +126,15 @@ export default function Sidebar({ isOpen = false, onClose }){
           <div className="user-info" aria-label="Signed in account">
             <div className="user-meta">
               <div className="user-avatar" aria-hidden="true">
-                {(user.name || user.email || 'U').trim().charAt(0).toUpperCase()}
+                {user.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt=""
+                    className="user-avatar-image"
+                  />
+                ) : (
+                  (user.name || user.email || 'U').trim().charAt(0).toUpperCase()
+                )}
               </div>
               <div>
                 <div className="user-name">{user.name}</div>
