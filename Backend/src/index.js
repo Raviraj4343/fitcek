@@ -1,15 +1,9 @@
 import dotenv from "dotenv";
-import express from "express";
 import connectDB from "./db/index.js";
+import app from "./app.js";
 import { PORT, DB_NAME, MONGODB_URI } from "./constants.js";
 
 dotenv.config();
-
-const app = express();
-
-app.get("/", (req, res) => {
-	res.json({ status: "ok", message: "Server running" });
-});
 
 const maskMongoUri = (uri) => {
 	try {

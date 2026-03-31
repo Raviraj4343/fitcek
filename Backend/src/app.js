@@ -4,7 +4,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import { notFound, errorHandler } from "./middleware/error.middleware.js";
+import { notFound, errorHandler } from "./middlewares/error.middleware.js";
 
 
 // ── Route imports ──────────────────────────────────────
@@ -27,12 +27,25 @@ app.use(
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: (origin, cb) => {
+      // In development allow any origin to avoid preflight blocking for local dev
+      if (process.env.NODE_ENV !== 'production') return cb(null, true)
+      // Allow requests with no origin (curl, mobile)
+      if (!origin) return cb(null, true)
+      const allowed = (process.env.CORS_ORIGIN || '').split(',').map(s=>s.trim()).filter(Boolean)
+      const ok = allowed.includes(origin)
+      return cb(ok ? null : new Error('Not allowed by CORS'), ok)
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Origin","Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   })
 );
+
+// Ensure preflight OPTIONS requests are handled
+app.options('*', cors())
 
 // ── Rate limiting ──────────────────────────────────────
 const globalLimiter = rateLimit({
@@ -83,7 +96,11 @@ app.use(`${API}/auth`, authLimiter, authRoutes);
 app.use(`${API}/user`, userRoutes);
 app.use(`${API}/food`, foodRoutes);
 app.use(`${API}/daily-log`, dailyLogRoutes);
+// Backwards-compatible alias used by the frontend (camelCase)
+app.use(`${API}/dailyLog`, dailyLogRoutes);
 app.use(`${API}/weight`, weightLogRoutes);
+// Backwards-compatible alias used by the frontend (camelCase)
+app.use(`${API}/weightLog`, weightLogRoutes);
 app.use(`${API}/insight`, insightRoutes);
 
 // ── 404 + error handler ────────────────────────────────
