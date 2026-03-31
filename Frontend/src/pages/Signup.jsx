@@ -24,7 +24,7 @@ export default function Signup(){
 
   return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style={{width:480}}>
+      <div style={{width:'100%',maxWidth:480,padding:12}}>
         <h2>Create your account</h2>
         <p style={{color:'var(--color-muted)'}}>Start your free trial and explore AQTEV.</p>
 
@@ -36,7 +36,7 @@ export default function Signup(){
 
           {error && <div style={{color:'var(--color-danger)',marginTop:8}}>{error}</div>}
 
-          <Button type="submit" style={{width:'100%',marginTop:12}} disabled={loading}>{loading ? 'Creating...' : 'Create account'}</Button>
+          <Button type="submit" className="btn-primary" style={{width:'100%',marginTop:12}} disabled={loading}>{loading ? 'Creating...' : 'Create account'}</Button>
 
           <p style={{fontSize:13,color:'var(--color-muted)',marginTop:12}}>Already have an account? <Link to="/signin">Sign in</Link></p>
         </form>

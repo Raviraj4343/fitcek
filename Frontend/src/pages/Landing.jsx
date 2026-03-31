@@ -15,10 +15,10 @@ export default function Landing(){
         </nav>
       </header>
 
-      <main style={{display:'grid',gridTemplateColumns:'1fr 460px',gap:40,alignItems:'center',padding:'48px 64px'}}>
-        <section>
+      <main className="landing-main">
+        <section className="hero">
           <h1 style={{fontSize:'var(--fs-xxl)',margin:0}}>Smarter health tracking for professionals</h1>
-          <p style={{color:'var(--color-muted)',marginTop:12,maxWidth:560}}>AQTEV helps you collect, visualize and act on daily health data — with elegant dashboards and simple workflows for your team and customers.</p>
+          <p style={{color:'var(--color-muted)',marginTop:12}}>AQTEV helps you collect, visualize and act on daily health data — with elegant dashboards and simple workflows for your team and customers.</p>
 
           <div style={{display:'flex',gap:12,marginTop:20}}>
             <Link to="/signup"><Button>Start free</Button></Link>
@@ -32,7 +32,7 @@ export default function Landing(){
           </section>
         </section>
 
-        <aside>
+        <aside className="aside-panel">
           <Card>
             <h3 style={{marginTop:0}}>Create an account</h3>
             <p style={{color:'var(--color-muted)'}}>Get started with a 14-day free trial — no credit card required.</p>

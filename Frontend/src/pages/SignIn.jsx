@@ -29,7 +29,7 @@ export default function SignIn(){
 
   return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style={{width:420}}>
+      <div style={{width:'100%',maxWidth:420,padding:12}}>
         <h2>Sign in to AQTEV</h2>
         <p style={{color:'var(--color-muted)'}}>Enter your credentials to access your dashboard.</p>
 
@@ -44,7 +44,7 @@ export default function SignIn(){
             <Link to="/forgot" style={{color:'var(--color-primary)'}}>Forgot?</Link>
           </div>
 
-          <Button type="submit" style={{width:'100%',marginTop:16}} disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</Button>
+          <Button type="submit" className="btn-primary" style={{width:'100%',marginTop:16}} disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</Button>
 
           <p style={{fontSize:13,color:'var(--color-muted)',marginTop:12}}>Don't have an account? <Link to="/signup">Create account</Link></p>
         </form>
