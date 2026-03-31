@@ -1,8 +1,9 @@
 import React from 'react'
 
-export default function Button({ children, variant = 'primary', disabled, ...props }){
-  const cls = variant === 'ghost' ? 'btn-ghost' : 'btn-primary'
+export default function Button({ children, variant = 'primary', disabled = false, className = '', type = 'button', ...props }){
+  const base = variant === 'ghost' ? 'btn-ghost' : 'btn-primary'
+  const cls = [base, className].filter(Boolean).join(' ')
   return (
-    <button className={cls} disabled={disabled} {...props}>{children}</button>
+    <button type={type} className={cls} disabled={disabled} aria-disabled={disabled} {...props}>{children}</button>
   )
 }
