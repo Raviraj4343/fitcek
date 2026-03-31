@@ -199,3 +199,141 @@ export {
   generateInsights,
   calculateMealTotals,
 };
+
+/**
+ * Compute a consolidated health report and 0-100 health score.
+ * Inputs: `user` (profile) and `dailyLog` (today's totals). Returns an object:
+ * { score, components: { bmiScore,... }, requiredCalories, requiredProtein, insights, suggestions, warnings }
+ */
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+const computeHealthReport = (user = {}, dailyLog = {}) => {
+  const report = {
+    score: 0,
+    components: {},
+    requiredCalories: null,
+    requiredProtein: null,
+    insights: [],
+    suggestions: [],
+    warnings: [],
+  };
+
+  if (!user || !user.weightKg || !user.heightCm || !user.age) {
+    report.warnings.push("Incomplete profile: age/height/weight required to compute full report.");
+  }
+
+  // Requirements
+  const requiredCalories = calculateDailyCalories(user || {});
+  const requiredProtein = calculateDailyProtein(user?.weightKg || 0, user?.goal);
+  report.requiredCalories = requiredCalories;
+  report.requiredProtein = requiredProtein;
+
+  // Ensure we have totals
+  const totals = {
+    totalCalories: dailyLog.totalCalories ?? 0,
+    totalProtein: dailyLog.totalProtein ?? 0,
+    sleepHours: dailyLog.sleepHours,
+    steps: dailyLog.steps,
+    waterIntake: dailyLog.waterIntake,
+  };
+
+  // 1) BMI score (max 25 points)
+  const { bmi } = calculateBMI(user?.weightKg || 0, user?.heightCm || 0);
+  // ideal BMI 20-24.9 -> best; linear penalty outside 18.5-30
+  let bmiScore = 0;
+  if (bmi >= 20 && bmi <= 24.9) bmiScore = 25;
+  else if (bmi < 18.5) bmiScore = clamp((bmi / 18.5) * 25, 0, 24);
+  else bmiScore = clamp((1 - (bmi - 24.9) / 10) * 25, 0, 25);
+
+  // 2) Nutrition score (max 30 points): calories (15) + protein (15)
+  const calDiffPct = requiredCalories > 0 ? (totals.totalCalories - requiredCalories) / requiredCalories : 0;
+  let calScore = 0;
+  if (Math.abs(calDiffPct) <= 0.1) calScore = 15; // within 10%
+  else if (calDiffPct < -0.3) calScore = 5; // very low
+  else if (calDiffPct > 0.3) calScore = 5; // very high
+  else calScore = clamp(15 - Math.abs(calDiffPct) * 50, 5, 15);
+
+  const proteinDiff = requiredProtein - totals.totalProtein;
+  let proteinScore = 0;
+  if (requiredProtein <= 0) proteinScore = 7.5;
+  else if (proteinDiff <= 0) proteinScore = 15;
+  else proteinScore = clamp(15 * Math.max(0, 1 - proteinDiff / requiredProtein), 0, 15);
+
+  const nutritionScore = calScore + proteinScore;
+
+  // 3) Activity score (max 20 points): combine activityLevel and steps
+  const activityLevelMultiplier = {
+    sedentary: 0.6,
+    light: 0.8,
+    moderate: 1.0,
+    active: 1.1,
+  }[user?.activityLevel] || 0.6;
+
+  let steps = totals.steps ?? null;
+  let stepsScore = 0;
+  if (steps === null) stepsScore = 6; // neutral
+  else if (steps < 3000) stepsScore = 2;
+  else if (steps < 7000) stepsScore = 8;
+  else stepsScore = 15;
+
+  const activityScore = clamp( (stepsScore * activityLevelMultiplier) , 0, 20 );
+
+  // 4) Sleep score (max 15 points)
+  let sleepScore = 0;
+  const sh = totals.sleepHours;
+  if (sh === undefined || sh === null) sleepScore = 7;
+  else if (sh < 5) sleepScore = 2;
+  else if (sh < 7) sleepScore = 9;
+  else if (sh <= 9) sleepScore = 15;
+  else sleepScore = 10; // oversleep mild penalty
+
+  // 5) Hydration score (max 10 points)
+  const waterMap = {"<1L": 2, "1-2L": 6, "2-3L": 8, "3L+": 10};
+  const hydrationScore = waterMap[totals.waterIntake] ?? 6;
+
+  // Aggregate weights: BMI 25, Nutrition 30, Activity 20, Sleep 15, Hydration 10 => total 100
+  const totalScore = clamp(
+    Math.round(bmiScore + nutritionScore + activityScore + sleepScore + hydrationScore),
+    0,
+    100
+  );
+
+  report.score = totalScore;
+  report.components = {
+    bmi: parseFloat(bmi.toFixed(1)),
+    bmiScore: Math.round(bmiScore),
+    nutritionScore: Math.round(nutritionScore),
+    activityScore: Math.round(activityScore),
+    sleepScore: Math.round(sleepScore),
+    hydrationScore: Math.round(hydrationScore),
+  };
+
+  // Use existing insights generator for textual guidance
+  const existing = generateInsights({
+    dailyLog: dailyLog || {},
+    requiredCalories,
+    requiredProtein,
+    bmiCategory: null,
+    goal: user?.goal,
+    dietPreference: user?.dietPreference,
+  });
+
+  report.insights.push(...(existing.insights || []));
+  report.suggestions.push(...(existing.suggestions || []));
+  report.warnings.push(...(existing.warnings || []));
+
+  // Add targeted recommendations based on components
+  if (report.components.nutritionScore < 20) {
+    report.suggestions.push("Focus on balanced meals: prioritize protein at each meal and whole foods.");
+  }
+  if (report.components.activityScore < 10) {
+    report.suggestions.push("Increase daily movement: short walks, standing breaks, or light cardio 3x/week.");
+  }
+  if (report.components.sleepScore < 10) {
+    report.suggestions.push("Improve sleep hygiene: consistent bedtime, limit screens 1h before bed.");
+  }
+
+  return report;
+};
+
+export { computeHealthReport };
