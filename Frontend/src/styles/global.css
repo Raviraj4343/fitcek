@@ -201,6 +201,39 @@ a:hover{color:var(--color-accent);text-decoration:underline}
 .profile-form{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .profile-form .field, .profile-form select{width:100%}
 .field-label{grid-column:span 2;font-size:13px;color:var(--color-muted);margin-top:6px}
+.profile-page{display:grid;gap:18px}
+.profile-top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.profile-edit-trigger{margin-top:0;min-height:44px;padding:0 16px;align-self:flex-start}
+.profile-shell{display:grid;gap:20px;padding:24px}
+.profile-hero{display:grid;gap:18px}
+.profile-avatar-wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.profile-avatar{width:108px;height:108px;border-radius:32px;overflow:hidden;background:linear-gradient(135deg,rgba(0,119,217,0.14),rgba(57,181,74,0.18));display:flex;align-items:center;justify-content:center;box-shadow:0 18px 32px rgba(2,20,38,0.1);flex-shrink:0}
+.profile-avatar-image{width:100%;height:100%;object-fit:cover}
+.profile-avatar-fallback{font-size:38px;font-weight:800;color:var(--color-primary)}
+.profile-avatar-actions{display:grid;gap:12px;flex:1;min-width:min(100%,360px)}
+.profile-avatar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.profile-avatar-copy h2{margin:0;font-size:28px;line-height:1.1}
+.profile-avatar-copy p{margin:6px 0 0;color:var(--color-muted)}
+.profile-upload-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.profile-file-label{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:14px;border:1px solid rgba(14,116,144,0.16);background:rgba(255,255,255,0.72);font-weight:700;color:var(--color-primary);cursor:pointer}
+.profile-file-input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.profile-file-name{font-size:13px;color:var(--color-muted);word-break:break-word}
+.profile-upload-actions .btn-primary{margin-top:0}
+.profile-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.profile-summary-card{padding:16px 18px;border-radius:20px;background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.66);box-shadow:0 12px 24px rgba(11,31,36,0.06)}
+.profile-summary-label{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,89,133,0.72);margin-bottom:8px}
+.profile-summary-value{font-size:18px;color:var(--color-text)}
+.profile-status{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,0.68);border:1px solid rgba(2,132,199,0.14);color:var(--color-primary);font-weight:600}
+.profile-form-panel{padding:20px;border-radius:24px;background:rgba(255,255,255,0.56);border:1px solid rgba(255,255,255,0.6)}
+.profile-form-panel select{min-height:54px;padding:0 14px;border-radius:14px;border:1px solid rgba(15,23,42,0.08);background:rgba(255,255,255,0.82);font-size:15px;color:var(--color-text)}
+.profile-form-actions{grid-column:span 2;display:flex;gap:12px;align-items:center;margin-top:8px}
+.profile-form-actions .btn-primary,.profile-form-actions .btn-ghost{margin-top:0}
+.profile-cancel-btn{min-width:120px}
+.profile-overview{display:grid;gap:16px}
+.profile-overview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.profile-detail-card{padding:18px;border-radius:20px;background:rgba(255,255,255,0.66);border:1px solid rgba(255,255,255,0.64);box-shadow:0 10px 24px rgba(11,31,36,0.05)}
+.profile-detail-card strong{display:block;font-size:18px;line-height:1.35;color:var(--color-text)}
+.profile-detail-label{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,89,133,0.7);margin-bottom:8px}
 
 .field.error input{border-color:var(--color-danger);box-shadow:none}
 .error-select{border:1px solid var(--color-danger);border-radius:8px;padding:10px}
@@ -248,6 +281,11 @@ a:hover{color:var(--color-accent);text-decoration:underline}
 }
 
 @media (max-width:800px){
+  .profile-top{align-items:stretch;flex-direction:column}
+  .profile-avatar-head{flex-direction:column}
+  .profile-summary-grid,.profile-overview-grid{grid-template-columns:1fr}
+  .profile-form{grid-template-columns:1fr}
+  .profile-form-actions,.field-label,.error-text{grid-column:auto}
   .sidebar{border-radius:22px 0 0 22px}
   .stats-grid{grid-template-columns:1fr}
   .stats-grid .stat-card{grid-column:auto}
@@ -295,5 +333,9 @@ a:hover{color:var(--color-accent);text-decoration:underline}
   .nav-item-label{font-size:17px}
   .nav-item-description{font-size:11px}
   .sidebar-close{width:40px;height:40px}
+  .profile-shell{padding:18px}
+  .profile-avatar{width:90px;height:90px;border-radius:26px}
+  .profile-avatar-copy h2{font-size:24px}
+  .profile-form-actions{flex-direction:column}
 }
 

@@ -82,11 +82,16 @@ export function uploadAvatar(file){
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api/v1'
   const form = new FormData()
   form.append('avatar', file)
+  const token = readToken()
+  const headers = {}
+
+  if (token) headers.Authorization = `Bearer ${token}`
 
   return fetch(`${API_BASE}/user/profile/avatar`, {
     method: 'POST',
     body: form,
-    credentials: 'include'
+    credentials: 'include',
+    headers
   }).then(async res => {
     const data = await res.json().catch(()=>null)
     if(!res.ok){
