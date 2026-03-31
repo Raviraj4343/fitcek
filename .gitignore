@@ -1,0 +1,13 @@
+# Ignore frontend env and build outputs
+Frontend/.env
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.vite/
+
+# Ignore backend env (backend already has its own .gitignore)
+Backend/.env
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
