@@ -8,6 +8,8 @@ import Landing from './pages/Landing'
 import SignIn from './pages/SignIn'
 import Signup from './pages/Signup'
 import DesignSystem from './pages/DesignSystem'
+import Forgot from './pages/Forgot'
+import ResetPassword from './pages/ResetPassword'
 import DailyLog from './pages/DailyLog'
 import Weight from './pages/Weight'
 import Foods from './pages/Foods'
@@ -20,6 +22,8 @@ export default function App(){
         <Route path="/" element={<Landing />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot" element={<Forgot />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/daily" element={<DailyLog />} />
         <Route path="/weight" element={<Weight />} />

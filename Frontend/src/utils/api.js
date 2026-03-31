@@ -36,6 +36,15 @@ export function resendVerification(email){
   return request('/auth/resend-verification', { method: 'POST', body: { email } })
 }
 
+// Password reset
+export function forgotPassword(email){
+  return request('/auth/forgot-password', { method: 'POST', body: { email } })
+}
+
+export function resetPassword(token, password){
+  return request('/auth/reset-password', { method: 'POST', body: { token, password } })
+}
+
 export function login({ email, password }){
   return request('/auth/login', { method: 'POST', body: { email, password } })
 }
@@ -158,6 +167,8 @@ export default {
   signup,
   verifyEmail,
   resendVerification,
+  forgotPassword,
+  resetPassword,
   login,
   logout,
   refreshToken,
