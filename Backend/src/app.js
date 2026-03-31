@@ -12,6 +12,7 @@ import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import foodRoutes from "./routes/food.route.js";
 import dailyLogRoutes from "./routes/dailyLog.route.js";
+import weightLogRoutes from "./routes/weightLog.route.js";
 
 
 
@@ -82,7 +83,7 @@ app.use(`${API}/auth`, authLimiter, authRoutes);
 app.use(`${API}/user`, userRoutes);
 app.use(`${API}/food`, foodRoutes);
 app.use(`${API}/daily-log`, dailyLogRoutes);
-
+app.use(`${API}/weight`, weightLogRoutes);
 
 
 // ── 404 + error handler ────────────────────────────────
