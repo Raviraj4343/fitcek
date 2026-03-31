@@ -23,30 +23,31 @@ const brevoClient = () => {
  */
 const sendVerificationEmail = async (email, name, token) => {
   const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
+  const logoUrl = `${process.env.CLIENT_URL || ""}/src/logo/app_logo.png`;
 
   const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-          <h1 style="color: white; margin: 0;">🏃 Health Tracker</h1>
+      <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto; padding: 20px; background-color: #f6fbfa;">
+        <div style="text-align:center;padding:18px 0;">
+          <img src="${logoUrl}" alt="AQTEV" style="height:56px;display:inline-block;" />
         </div>
-        <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <h2 style="color: #333;">Hi ${name}! 👋</h2>
-          <p style="color: #666; font-size: 16px;">Welcome to Health Tracker! Please verify your email address to activate your account.</p>
-          <div style="text-align: center; margin: 30px 0;">
+        <div style="background: white; padding: 28px; border-radius: 12px; box-shadow: 0 4px 18px rgba(2,6,23,0.06);">
+          <h2 style="color: #042827; margin-top:0">Hi ${name}! 👋</h2>
+          <p style="color: #475e63; font-size: 16px;">Thanks for signing up for <strong>AQTEV</strong>. Please verify your email address to activate your account.</p>
+          <div style="text-align: center; margin: 28px 0;">
             <a href="${verifyUrl}" 
-               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+               style="background: linear-gradient(90deg, #01786f 0%, #06b6d4 100%); 
                       color: white; 
-                      padding: 14px 30px; 
-                      border-radius: 25px; 
+                      padding: 12px 28px; 
+                      border-radius: 30px; 
                       text-decoration: none; 
-                      font-size: 16px;
-                      font-weight: bold;">
+                      font-size: 15px;
+                      font-weight: 700;">
               Verify My Email
             </a>
           </div>
-                 <p style="color: #999; font-size: 14px;">This link expires in <strong>${process.env.EMAIL_VERIFICATION_EXPIRE_TIME || "24 hours"}</strong>. If you didn't create an account, you can safely ignore this email.</p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #ccc; font-size: 12px; text-align: center;">Health Tracker App © ${new Date().getFullYear()}</p>
+          <p style="color: #94a3b8; font-size: 13px;">This link expires in <strong>${process.env.EMAIL_VERIFICATION_EXPIRE_TIME || "24 hours"}</strong>. If you didn't create an account, you can safely ignore this email.</p>
+          <hr style="border: none; border-top: 1px solid #eef2f6; margin: 20px 0;">
+          <p style="color: #9aa7a3; font-size: 12px; text-align: center;">AQTEV © ${new Date().getFullYear()}</p>
         </div>
       </div>
     `;
@@ -83,12 +84,20 @@ const sendVerificationEmail = async (email, name, token) => {
 const sendPasswordResetEmail = async (email, name, token) => {
   const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
 
+  const logoUrl = `${process.env.CLIENT_URL || ""}/src/logo/app_logo.png`;
   const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2>Hi ${name},</h2>
-        <p>You requested a password reset. Click the link below:</p>
-        <a href="${resetUrl}" style="background:#667eea; color:white; padding:12px 25px; border-radius:20px; text-decoration:none;">Reset Password</a>
-        <p style="color:#999; font-size:13px; margin-top:20px;">This link expires in 1 hour.</p>
+      <div style="font-family: Arial, sans-serif; max-width: 680px; margin: 0 auto; padding: 20px; background-color: #f6fbfa;">
+        <div style="text-align:center;padding:18px 0;">
+          <img src="${logoUrl}" alt="AQTEV" style="height:56px;display:inline-block;" />
+        </div>
+        <div style="background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 18px rgba(2,6,23,0.06);">
+          <h2 style="margin-top:0;color:#042827">Hi ${name},</h2>
+          <p style="color:#475e63">You requested a password reset. Click the button below to set a new password.</p>
+          <div style="text-align:center;margin:20px 0;">
+            <a href="${resetUrl}" style="background:linear-gradient(90deg,#01786f 0%,#06b6d4 100%);color:white;padding:12px 24px;border-radius:26px;text-decoration:none;font-weight:700;">Reset Password</a>
+          </div>
+          <p style="color:#94a3b8;font-size:13px">This link expires in 1 hour.</p>
+        </div>
       </div>
     `;
 

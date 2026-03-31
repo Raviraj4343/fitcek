@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import cron from "node-cron";
 import { verifyToken } from "../utils/jwt.util.js";
-import User from "../models/User.model.js";
+import User from "../models/user.model.js";
 
 const connectedUsers = new Map();
 
