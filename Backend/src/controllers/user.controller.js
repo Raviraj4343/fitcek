@@ -2,25 +2,10 @@ import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";
-import { calculateBMI, calculateDailyCalories, calculateDailyProtein } from "../utils/healthUtils.js";
+import { calculateBMI, calculateDailyCalories, calculateDailyProtein } from "../utils/HealthCalculation.js";
 // (duplicates removed)
-import multer from "multer";
-import path from "path";
-import fs from "fs";
-
-// Multer storage for avatar uploads (stores under public/uploads/avatars)
-const avatarsDir = path.join(process.cwd(), "public", "uploads", "avatars");
-fs.mkdirSync(avatarsDir, { recursive: true });
-const storage = multer.diskStorage({
-  destination: function (_req, _file, cb) {
-    cb(null, avatarsDir);
-  },
-  filename: function (_req, file, cb) {
-    const name = `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`;
-    cb(null, name);
-  },
-});
-const upload = multer({ storage });
+// Avatar upload depends on `multer` which may not be installed in this environment.
+// If multer is not available the endpoint will return 501 with instructions.
 
 
 const setupProfile = asyncHandler(async (req, res) => {
@@ -129,22 +114,10 @@ const getProfile = asyncHandler(async (req, res) => {
 });
 
 
-// Upload avatar handler (expects multipart/form-data with `avatar` file)
+// Upload avatar handler (stub) — requires multer to be installed to work.
 const uploadAvatar = [
-  upload.single("avatar"),
-  asyncHandler(async (req, res) => {
-    if (!req.file) throw new ApiError(400, "No avatar file uploaded.");
-
-    const relPath = `/uploads/avatars/${req.file.filename}`;
-    const avatarUrl = `${process.env.SERVER_URL || process.env.CLIENT_URL || ""}${relPath}`;
-
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { avatarUrl },
-      { new: true }
-    );
-
-    return res.status(200).json(new ApiResponse(200, user, "Avatar uploaded successfully."));
+  asyncHandler(async (_req, res) => {
+    throw new ApiError(501, "Avatar upload disabled: please install 'multer' on the server and restart to enable this feature.");
   }),
 ];
 
