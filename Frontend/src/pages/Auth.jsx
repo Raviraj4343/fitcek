@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../utils/api'
+import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
 
 export default function Auth(){
   const [email, setEmail] = useState('')
@@ -32,15 +34,8 @@ export default function Auth(){
               setError(err.payload?.message || err.message || 'Login failed')
             }
           }}>
-            <div className="field">
-              <input id="email" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder=" " required />
-              <label htmlFor="email">Email address</label>
-            </div>
-
-            <div className="field">
-              <input id="password" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder=" " required />
-              <label htmlFor="password">Password</label>
-            </div>
+            <Input id="email" type="email" label="Email address" value={email} onChange={e=>setEmail(e.target.value)} required />
+            <Input id="password" type="password" label="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
 
             <div className="actions">
               <label className="checkbox"><input type="checkbox" /> Remember me</label>
@@ -49,7 +44,7 @@ export default function Auth(){
 
             {error && <div style={{color:'#b91c1c',marginBottom:8}}>{error}</div>}
 
-            <button className="btn-primary" type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
+            <Button type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</Button>
 
             <p className="muted small">Don't have an account? <Link to="/signup">Sign up</Link></p>
           </form>

@@ -5,12 +5,25 @@
 
 
   /* --- Auth split-screen styles --- */
-  .auth-root{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - var(--topbar-height));padding:40px}
-  .auth-split{width:100%;max-width:980px;display:grid;grid-template-columns:1fr 1fr;border-radius:12px;overflow:hidden;box-shadow:var(--shadow-1)}
-  .auth-panel{padding:44px 36px;background:var(--surface)}
+    --bg: #F8FAFC; /* light background */
+    --surface: #FFFFFF;
+    --muted: #6B7280;
+    --primary: #2563EB; /* requested primary blue */
+    --primary-600: #1D4ED8;
+    --secondary: #22C55E; /* requested green */
+    --radius: 10px;
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing: 16px;
+    --spacing-lg: 24px;
+    --shadow-1: 0 6px 18px rgba(2,6,23,0.06);
+    --shadow-2: 0 2px 8px rgba(2,6,23,0.04);
+    --sidebar-width: 240px;
+    --topbar-height: 64px;
   .auth-form{display:flex;flex-direction:column;gap:12px}
   .auth-brand{font-weight:800;color:var(--accent-600);font-size:20px}
-  .auth-form h2{margin:6px 0 0 0}
+  * {
+    box-sizing: border-box;
   .auth-form .muted{color:var(--muted);margin-bottom:12px}
   .auth-box{margin-top:8px;display:flex;flex-direction:column}
   .field{position:relative;margin-bottom:14px}
