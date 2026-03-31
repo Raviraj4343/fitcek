@@ -19,6 +19,43 @@ import insightRoutes from "./routes/insight.route.js";
 
 const app = express();
 
+const normalizeOrigin = (value = "") => value.trim().replace(/\/$/, "");
+
+const configuredOrigins = new Set(
+  (process.env.CORS_ORIGIN || "")
+    .split(",")
+    .map(normalizeOrigin)
+    .filter(Boolean)
+);
+
+[
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173",
+  "https://aqtev.vercel.app",
+].forEach((origin) => configuredOrigins.add(origin));
+
+const isAllowedOrigin = (origin) => {
+  const normalized = normalizeOrigin(origin);
+  if (!normalized) return true;
+  if (configuredOrigins.has(normalized)) return true;
+
+  try {
+    const { hostname, protocol } = new URL(normalized);
+    if (
+      protocol === "https:" &&
+      (hostname === "vercel.app" || hostname.endsWith(".vercel.app"))
+    ) {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
+};
+
 // ── Security middlewares ───────────────────────────────
 app.use(
   helmet({
@@ -30,12 +67,11 @@ app.use(
   cors({
     origin: (origin, cb) => {
       // In development allow any origin to avoid preflight blocking for local dev
-      if (process.env.NODE_ENV !== 'production') return cb(null, true)
+      if (process.env.NODE_ENV !== "production") return cb(null, true)
       // Allow requests with no origin (curl, mobile)
       if (!origin) return cb(null, true)
-      const allowed = (process.env.CORS_ORIGIN || '').split(',').map(s=>s.trim()).filter(Boolean)
-      const ok = allowed.includes(origin)
-      return cb(ok ? null : new Error('Not allowed by CORS'), ok)
+      const ok = isAllowedOrigin(origin)
+      return cb(ok ? null : new Error(`Not allowed by CORS: ${origin}`), ok)
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

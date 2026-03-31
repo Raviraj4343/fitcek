@@ -5,10 +5,19 @@ import User from "../models/user.model.js";
 
 const connectedUsers = new Map();
 
+const socketCorsOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+if (!socketCorsOrigins.includes("https://aqtev.vercel.app")) {
+  socketCorsOrigins.push("https://aqtev.vercel.app");
+}
+
 const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+      origin: socketCorsOrigins.length ? socketCorsOrigins : ["http://localhost:3000"],
       methods: ["GET", "POST"],
       credentials: true,
     },
