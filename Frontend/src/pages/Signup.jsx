@@ -5,6 +5,7 @@ import Input from '../components/ui/Input'
 import api from '../utils/api'
 import '../styles/global.css'
 import Brand from '../components/Brand'
+import VerificationModal from '../components/VerificationModal'
 
 export default function Signup(){
   const [name, setName] = useState('')
@@ -14,6 +15,8 @@ export default function Signup(){
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const [showVerify, setShowVerify] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState(null)
 
   async function handleSubmit(e){
     e.preventDefault()
@@ -24,8 +27,9 @@ export default function Signup(){
       const res = await api.signup({ name, email, password })
       setLoading(false)
       setError(null)
-      // Inform user to verify email
-      navigate('/auth', { state: { message: res?.message || 'Account created. Please check your email and verify before signing in.' } })
+      // Show verification modal so user can paste token or resend
+      setRegisteredEmail(res?.data?.email || email)
+      setShowVerify(true)
     }catch(err){
       console.error('Signup error', err)
       setError(err.payload?.message || err.message || 'Signup failed')
@@ -52,6 +56,7 @@ export default function Signup(){
           <p style={{fontSize:13,color:'var(--color-muted)',marginTop:12}}>Already have an account? <Link to="/signin">Sign in</Link></p>
         </form>
       </div>
+      {showVerify && <VerificationModal email={registeredEmail} onClose={(ok)=>{ setShowVerify(false); if(ok) navigate('/signin') }} />}
     </div>
   )
 }

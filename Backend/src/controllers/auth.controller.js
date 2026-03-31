@@ -34,31 +34,42 @@ const issueTokens = async (user, res) => {
 
 
 const signup = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    throw new ApiError(409, "An account with this email already exists.");
-  }
-
-  const user = await User.create({ name, email, password });
-
-  // Send verification email
-  const verifyToken_ = tokenUtils.generateEmailVerifyToken(user._id);
   try {
-    await sendemail.sendVerificationEmail(email, name, verifyToken_);
-  } catch (emailErr) {
-    console.error("Email send failed:", emailErr.message);
-    // Don't block signup if email fails – user can request resend
-  }
+    console.log('auth.signup invoked', { bodySnippet: { name: req.body?.name, email: req.body?.email } })
+    const { name, email, password } = req.body;
 
-  return res.status(201).json(
-    new ApiResponse(
-      201,
-      { userId: user._id, email: user.email },
-      "Account created! Please verify your email to continue."
-    )
-  );
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw new ApiError(409, "An account with this email already exists.");
+    }
+
+    const user = await User.create({ name, email, password });
+      // Send verification email and report back whether the send succeeded
+      const verifyToken_ = tokenUtils.generateEmailVerifyToken(user._id);
+      let emailSent = true;
+      try {
+        await sendemail.sendVerificationEmail(email, user.name, verifyToken_);
+      } catch (emailErr) {
+        emailSent = false;
+        console.error("Email send failed:", emailErr && emailErr.stack ? emailErr.stack : emailErr.message || emailErr);
+        // don't block signup; frontend may offer a resend option
+      }
+
+      const respData = { userId: user._id, email: user.email, emailSent };
+
+      return res.status(201).json(
+        new ApiResponse(
+          201,
+          respData,
+          emailSent
+            ? "Account created! Please verify your email to continue."
+            : "Account created but we couldn't send the verification email. Please resend verification."
+        )
+      );
+  } catch (err) {
+    console.error('auth.signup unexpected error:', err && err.stack ? err.stack : err)
+    throw err
+  }
 });
 
 
@@ -103,11 +114,19 @@ const resendVerification = asyncHandler(async (req, res) => {
   }
 
   const verifyToken_ = tokenUtils.generateEmailVerifyToken(user._id);
-  await sendemail.sendVerificationEmail(email, user.name, verifyToken_);
+  let emailSent = true;
+  try {
+    await sendemail.sendVerificationEmail(email, user.name, verifyToken_);
+  } catch (e) {
+    emailSent = false;
+    console.error('resendVerification: email send failed', e && e.stack ? e.stack : e);
+  }
+  const respData = { emailSent };
+  if (process.env.NODE_ENV !== 'production') respData.verifyToken = verifyToken_;
 
   return res
     .status(200)
-    .json(new ApiResponse(200, null, "Verification email resent."));
+    .json(new ApiResponse(200, respData, emailSent ? "Verification email resent." : "Could not send verification email."));
 });
 
 

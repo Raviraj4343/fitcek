@@ -9,6 +9,7 @@ import { notFound, errorHandler } from "./middlewares/error.middleware.js";
 
 // ── Route imports ──────────────────────────────────────
 import authRoutes from "./routes/auth.route.js";
+import devRoutes from "./routes/dev.route.js";
 import userRoutes from "./routes/user.route.js";
 import foodRoutes from "./routes/food.route.js";
 import dailyLogRoutes from "./routes/dailyLog.route.js";
@@ -61,7 +62,6 @@ const authLimiter = rateLimit({
   message: { success: false, message: "Too many auth attempts. Please wait 15 minutes." },
 });
 
-app.use(globalLimiter);
 
 // ── Body / cookie parsers ──────────────────────────────
 app.use(express.json({ limit: "16kb" }));
@@ -91,7 +91,13 @@ app.get("/health", (_req, res) => {
 // ── API Routes ─────────────────────────────────────────
 const API = "/api/v1";
 
-app.use(`${API}/auth`, authLimiter, authRoutes);
+// Apply auth routes without a global limiter; a focused limiter is applied to sensitive endpoints in the route file.
+app.use(`${API}/auth`, authRoutes);
+// Dev-only helpers
+app.use(`${API}/dev`, devRoutes);
+// Apply global limiter to all non-auth routes (avoid throttling auth endpoints like /me during development)
+app.use(globalLimiter);
+
 app.use(`${API}/user`, userRoutes);
 app.use(`${API}/food`, foodRoutes);
 app.use(`${API}/daily-log`, dailyLogRoutes);

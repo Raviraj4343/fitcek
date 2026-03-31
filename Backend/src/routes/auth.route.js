@@ -1,5 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
+import rateLimit from "express-rate-limit";
 import { signup, verifyEmail, resendVerification, forgotPassword, resetPassword, login, logout, refreshAccessToken, getMe } from "../controllers/auth.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
@@ -28,6 +29,13 @@ const loginValidation = [
 
 const router=express.Router();
 
+// Focused limiter for sensitive auth endpoints (login / forgot-password)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: "Too many auth attempts. Please wait 15 minutes." },
+});
+
 router.post("/signup", signupValidation, validate, signup);
 router.get("/verify-email", verifyEmail);
 router.post("/resend-verification",
@@ -37,6 +45,7 @@ router.post("/resend-verification",
 );
 router.post(
   "/forgot-password",
+  authLimiter,
   body("email").isEmail().withMessage("Valid email required"),
   validate,
   forgotPassword
@@ -49,7 +58,7 @@ router.post(
   validate,
   resetPassword
 );
-router.post("/login", loginValidation, validate, login);
+router.post("/login", authLimiter, loginValidation, validate, login);
 router.post("/logout", protect, logout);
 router.post("/refresh-token", refreshAccessToken);
 router.get("/me", protect, getMe);

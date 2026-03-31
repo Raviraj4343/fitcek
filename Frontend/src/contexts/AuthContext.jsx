@@ -21,12 +21,15 @@ export function AuthProvider({ children }){
 
   const login = async (payload)=>{
     const res = await api.login(payload)
+    // Save access token (backend also sets cookies). This helps dev when cookies are blocked for cross-origin.
+    try{ if (res?.data?.accessToken) api.saveToken(res.data.accessToken) }catch(e){}
     await load()
     return res
   }
 
   const logout = async ()=>{
-    await api.logout()
+    try{ await api.logout() }catch(e){}
+    try{ api.clearToken() }catch(e){}
     setUser(null)
   }
 

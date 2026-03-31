@@ -58,14 +58,18 @@ const errorHandler = (err, req, res, _next) => {
   }
 
   // Default: 500 Internal Server Error
-  return res.status(500).json({
+  const payload = {
     success: false,
     statusCode: 500,
-    message: process.env.NODE_ENV === "production"
-      ? "Internal server error"
-      : err.message,
+    message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message,
     errors: [],
-  });
+  };
+  // In development include stack for easier debugging (local-only)
+  if (process.env.NODE_ENV === "development") {
+    payload.stack = err.stack;
+  }
+
+  return res.status(500).json(payload);
 };
 
 /**

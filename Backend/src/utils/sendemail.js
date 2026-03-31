@@ -1,5 +1,17 @@
 import nodemailer from "nodemailer";
 
+// Ensure `fetch` is available in Node (Node 18+ has global fetch). If not, try to polyfill.
+if (typeof fetch === 'undefined') {
+  try {
+    const mod = await import('node-fetch');
+    // node-fetch v3 exports default as the fetch function
+    global.fetch = mod.default || mod;
+  } catch (e) {
+    // leave it undefined; we'll surface a clear error later if HTTP fallback is needed
+    console.warn('node global fetch not available and node-fetch could not be imported:', e && e.message);
+  }
+}
+
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.gmail.com",
@@ -19,8 +31,41 @@ const brevoClient = async () => {
     const Brevo = mod.default || mod;
     return new Brevo({ apiKey: process.env.BREVO_API_KEY });
   } catch (e) {
-    console.warn('Brevo package not available:', e.message);
+    // SDK not installed — we'll fall back to HTTP API using fetch
+    console.warn('Brevo SDK not available, will use HTTP API fallback:', e && e.message);
     return null;
+  }
+};
+
+const sendViaBrevoHttp = async (sendSmtpEmail) => {
+  // Use Brevo HTTP API as fallback when SDK isn't installed
+  const url = 'https://api.brevo.com/v3/smtp/email';
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) throw new Error('BREVO_API_KEY not configured');
+
+  try {
+    const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(sendSmtpEmail),
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(()=>null);
+      const err = new Error(`Brevo HTTP API error: ${res.status} ${res.statusText} ${text || ''}`);
+      err.status = res.status;
+      throw err;
+    }
+
+    return res.json();
+  } catch (e) {
+    // enrich error for caller
+    const err = new Error(`Brevo HTTP send failed: ${e && e.message}`);
+    err.original = e;
+    throw err;
   }
 };
 
@@ -59,17 +104,28 @@ const sendVerificationEmail = async (email, name, token) => {
     `;
 
   const brevo = await brevoClient();
-  if (brevo) {
-    const tranEmailApi = new brevo.TransactionalEmailsApi();
-    const sendSmtpEmail = {
-      sender: { name: "Health Tracker", email: process.env.SENDER_EMAIL },
-      to: [{ email, name }],
-      subject: "✅ Verify Your Email – Health Tracker",
-      htmlContent: htmlContent,
-    };
+  const sendSmtpEmail = {
+    sender: { name: "Health Tracker", email: process.env.SENDER_EMAIL },
+    to: [{ email, name }],
+    subject: "✅ Verify Your Email – Health Tracker",
+    htmlContent: htmlContent,
+  };
 
-    const response = await tranEmailApi.sendTransacEmail(sendSmtpEmail);
-    return response;
+  if (brevo) {
+    try {
+      const tranEmailApi = new brevo.TransactionalEmailsApi();
+      const response = await tranEmailApi.sendTransacEmail(sendSmtpEmail);
+      return response;
+    } catch (e) {
+      console.warn('Brevo SDK send failed, falling back to HTTP API:', e && e.message);
+      // try HTTP API fallback
+      return await sendViaBrevoHttp(sendSmtpEmail);
+    }
+  }
+
+  // If SDK not available but API key present, use HTTP API directly
+  if (process.env.BREVO_API_KEY) {
+    return await sendViaBrevoHttp(sendSmtpEmail);
   }
 
   const transporter = createTransporter();
@@ -107,20 +163,33 @@ const sendPasswordResetEmail = async (email, name, token) => {
       </div>
     `;
 
+  const sendSmtpEmail = {
+    sender: { name: "Health Tracker", email: process.env.SENDER_EMAIL },
+    to: [{ email, name }],
+    subject: "🔑 Reset Your Password – Health Tracker",
+    htmlContent: htmlContent,
+  };
+
   const brevo = await brevoClient();
   if (brevo) {
-    const tranEmailApi = new brevo.TransactionalEmailsApi();
-    const sendSmtpEmail = {
-      sender: { name: "Health Tracker", email: process.env.SENDER_EMAIL },
-      to: [{ email, name }],
-      subject: "🔑 Reset Your Password – Health Tracker",
-      htmlContent: htmlContent,
-    };
-
-    const response = await tranEmailApi.sendTransacEmail(sendSmtpEmail);
-    return response;
+    try {
+      const tranEmailApi = new brevo.TransactionalEmailsApi();
+      const response = await tranEmailApi.sendTransacEmail(sendSmtpEmail);
+      return response;
+    } catch (e) {
+      console.warn('Brevo SDK send failed, falling back to HTTP API:', e && e.message);
+      return await sendViaBrevoHttp(sendSmtpEmail);
+    }
   }
 
+  if (process.env.BREVO_API_KEY) {
+    return await sendViaBrevoHttp(sendSmtpEmail);
+  }
+
+  // Fall back to SMTP transporter
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    throw new Error('SMTP credentials missing and Brevo not available — cannot send email');
+  }
   const transporter = createTransporter();
   const mailOptions = {
     from: `"Health Tracker App" <${process.env.SMTP_USER || process.env.SENDER_EMAIL}>`,

@@ -6,6 +6,7 @@ import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import '../styles/global.css'
 import Brand from '../components/Brand'
+import VerificationModal from '../components/VerificationModal'
 
 export default function SignIn(){
   const auth = useAuth()
@@ -15,6 +16,8 @@ export default function SignIn(){
   const [error, setError] = useState(null)
   const [showResend, setShowResend] = useState(false)
   const [resendEmail, setResendEmail] = useState('')
+  const [showVerify, setShowVerify] = useState(false)
+  const [verifyEmailAddr, setVerifyEmailAddr] = useState('')
   const navigate = useNavigate()
 
   async function handleSubmit(e){
@@ -31,8 +34,9 @@ export default function SignIn(){
       const status = err.status || err.payload?.statusCode
       if(status === 403 || (err.payload && /verify/i.test(err.payload.message || ''))){
         setError(null)
-        // show inline resend UI
-        setShowResend(true)
+        // show verification modal prefilled with email
+        setVerifyEmailAddr(email)
+        setShowVerify(true)
       } else {
         setError(err.payload?.message || err.message || 'Sign in failed')
       }
@@ -51,21 +55,8 @@ export default function SignIn(){
 
           {error && <div style={{color: 'var(--color-danger)', marginTop:8}}>{error}</div>}
 
-          {showResend && (
-            <div style={{marginTop:10}}>
-              <div style={{color:'var(--color-muted)',marginBottom:8}}>Your email isn't verified yet. Enter your email to resend verification.</div>
-              <div style={{display:'flex',gap:8}}>
-                <Input id="resend-email" label="Email to resend" type="email" value={resendEmail || email} onChange={e=>setResendEmail(e.target.value)} />
-                <Button type="button" onClick={async ()=>{
-                  try{
-                    await api.resendVerification(resendEmail || email)
-                    alert('Verification email resent — check your inbox')
-                  }catch(err){
-                    alert(err.payload?.message || err.message || 'Unable to resend')
-                  }
-                }} className="btn-ghost">Resend</Button>
-              </div>
-            </div>
+          {showVerify && (
+            <VerificationModal email={verifyEmailAddr} onClose={(ok)=>{ setShowVerify(false); if(ok) navigate('/signin') }} />
           )}
 
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
