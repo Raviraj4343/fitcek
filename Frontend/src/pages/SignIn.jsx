@@ -44,29 +44,30 @@ export default function SignIn(){
   }
 
   return (
-    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style={{width:'100%',maxWidth:420,padding:12}}>
+    <div className="auth-page-shell">
+      <div className="auth-page-card auth-page-card-simple">
+        <span className="auth-page-kicker">Welcome back</span>
         <h2>Sign in to <Brand textOnly inline /></h2>
-        <p style={{color:'var(--color-muted)'}}>Enter your credentials to access your dashboard.</p>
+        <p className="auth-page-copy">Enter your credentials to access your dashboard.</p>
 
-        <form onSubmit={handleSubmit} style={{marginTop:16}}>
+        <form onSubmit={handleSubmit} className="auth-page-form">
           <Input id="si-email" label="Email address" type="email" value={email} onChange={e=>setEmail(e.target.value)} required />
           <Input id="si-password" label="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
 
-          {error && <div style={{color: 'var(--color-danger)', marginTop:8}}>{error}</div>}
+          {error && <div className="auth-page-error">{error}</div>}
 
           {showVerify && (
             <VerificationModal email={verifyEmailAddr} onClose={(ok)=>{ setShowVerify(false); if(ok) navigate('/signin') }} />
           )}
 
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
-            <label style={{color:'var(--color-muted)',fontSize:13}}><input type="checkbox"/> Remember me</label>
-            <Link to="/forgot" style={{color:'var(--color-primary)'}}>Forgot?</Link>
+          <div className="auth-page-row">
+            <label className="auth-page-checkbox"><input type="checkbox"/> Remember me</label>
+            <Link to="/forgot" className="auth-page-link">Forgot password?</Link>
           </div>
 
-          <Button type="submit" className="btn-primary" style={{width:'100%',marginTop:16}} disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</Button>
+          <Button type="submit" className="btn-primary auth-submit-btn" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</Button>
 
-          <p style={{fontSize:13,color:'var(--color-muted)',marginTop:12}}>Don't have an account? <Link to="/signup">Create account</Link></p>
+          <p className="auth-page-footnote">Don't have an account? <Link to="/signup">Create account</Link></p>
         </form>
       </div>
     </div>

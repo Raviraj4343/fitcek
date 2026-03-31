@@ -38,22 +38,23 @@ export default function Signup(){
   }
 
   return (
-    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style={{width:'100%',maxWidth:480,padding:12}}>
-        <h2>Create your account</h2>
-        <p style={{color:'var(--color-muted)'}}>Start your free trial and explore <Brand textOnly inline />.</p>
+    <div className="auth-page-shell">
+      <div className="auth-page-card auth-page-card-simple">
+        <span className="auth-page-kicker">Get started</span>
+        <h2>Create account</h2>
+        <p className="auth-page-copy">Start your free trial and explore <Brand textOnly inline />.</p>
 
-        <form onSubmit={handleSubmit} style={{marginTop:16}}>
+        <form onSubmit={handleSubmit} className="auth-page-form">
           <Input id="su-name" label="Full name" value={name} onChange={e=>setName(e.target.value)} required />
           <Input id="su-email" label="Email address" type="email" value={email} onChange={e=>setEmail(e.target.value)} required />
           <Input id="su-password" label="Password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
           <Input id="su-confirm" label="Confirm password" type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} required />
 
-          {error && <div style={{color:'var(--color-danger)',marginTop:8}}>{error}</div>}
+          {error && <div className="auth-page-error">{error}</div>}
 
-          <Button type="submit" className="btn-primary" style={{width:'100%',marginTop:12}} disabled={loading}>{loading ? 'Creating...' : 'Create account'}</Button>
+          <Button type="submit" className="btn-primary auth-submit-btn" disabled={loading}>{loading ? 'Creating...' : 'Create account'}</Button>
 
-          <p style={{fontSize:13,color:'var(--color-muted)',marginTop:12}}>Already have an account? <Link to="/signin">Sign in</Link></p>
+          <p className="auth-page-footnote">Already have an account? <Link to="/signin">Sign in</Link></p>
         </form>
       </div>
       {showVerify && <VerificationModal email={registeredEmail} onClose={(ok)=>{ setShowVerify(false); if(ok) navigate('/signin') }} />}

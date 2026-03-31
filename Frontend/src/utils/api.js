@@ -1,6 +1,14 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api/v1'
+const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
+const API_BASE = import.meta.env.VITE_API_BASE || (isLocalHost ? 'http://localhost:8000/api/v1' : '')
+
+function getApiBase(){
+  if (API_BASE) return API_BASE
+
+  throw new Error('Frontend API is not configured. Set VITE_API_BASE in your Vercel project environment variables.')
+}
 
 async function request(path, { method = 'GET', body, token, headers = {} } = {}){
+  const apiBase = getApiBase()
   const init = {
     method,
     headers: {
@@ -19,7 +27,7 @@ async function request(path, { method = 'GET', body, token, headers = {} } = {})
   if (body) init.body = JSON.stringify(body)
   if (token) init.headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch(`${API_BASE}${path}`, init)
+  const res = await fetch(`${apiBase}${path}`, init)
   const data = await res.json().catch(()=>null)
   if (!res.ok) {
     const err = new Error(data?.message || 'Request failed')
@@ -79,7 +87,7 @@ export function getProfile(){
 }
 
 export function uploadAvatar(file){
-  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api/v1'
+  const apiBase = getApiBase()
   const form = new FormData()
   form.append('avatar', file)
   const token = readToken()
@@ -87,7 +95,7 @@ export function uploadAvatar(file){
 
   if (token) headers.Authorization = `Bearer ${token}`
 
-  return fetch(`${API_BASE}/user/profile/avatar`, {
+  return fetch(`${apiBase}/user/profile/avatar`, {
     method: 'POST',
     body: form,
     credentials: 'include',

@@ -1,10 +1,14 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Brand from './Brand'
+import { useAuth } from '../contexts/AuthContext'
+
+const PUBLIC_PATHS = ['/', '/signin', '/signup', '/auth', '/forgot', '/reset-password']
 
 export default function Navbar({ isSidebarOpen = false, onToggleSidebar }){
   const { pathname } = useLocation()
-  const isLanding = pathname === '/'
+  const { user } = useAuth() || {}
+  const showAuthLinks = !user && PUBLIC_PATHS.includes(pathname)
 
   return (
     <header className="topbar">
@@ -14,7 +18,7 @@ export default function Navbar({ isSidebarOpen = false, onToggleSidebar }){
         </div>
 
         <div className="topbar-right">
-          {isLanding ? (
+          {showAuthLinks ? (
             <>
               <Link to="/signin" className="nav-auth-link">Sign in</Link>
               <Link to="/signup" className="btn-primary" style={{ marginTop: 0, padding: '10px 14px' }}>Sign up</Link>
