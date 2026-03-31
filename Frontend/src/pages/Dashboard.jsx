@@ -19,13 +19,14 @@ const getBmiCategory = (bmi) => {
 }
 
 const formatValue = (value, suffix = '') => {
-  if (value === null || value === undefined) return '—'
+  if (value === null || value === undefined) return '-'
   return `${value}${suffix}`
 }
 
 export default function Dashboard(){
   const { user } = useAuth() || {}
   const [stats, setStats] = useState({ bmi: null, requiredCalories: null, requiredProtein: null })
+  const [today, setToday] = useState({ calories: 0, protein: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -33,13 +34,21 @@ export default function Dashboard(){
 
     async function load(){
       try {
-        const res = await api.getHealthStats()
+        const [res, todayRes] = await Promise.all([
+          api.getHealthStats(),
+          api.getTodayInsight().catch(() => null)
+        ])
         if (!mounted) return
         const data = res?.data || {}
+        const todayData = todayRes?.data?.today || {}
         setStats({
           bmi: data.bmi ?? null,
           requiredCalories: data.requiredCalories ?? null,
           requiredProtein: data.requiredProtein ?? null
+        })
+        setToday({
+          calories: todayData.calories ?? 0,
+          protein: todayData.protein ?? 0
         })
       } catch (e) {
         // keep graceful empty state
@@ -56,7 +65,7 @@ export default function Dashboard(){
     {
       id: 'bmi',
       label: 'BMI',
-      value: loading ? '—' : formatValue(stats.bmi),
+      value: loading ? '-' : formatValue(stats.bmi),
       note: getBmiCategory(stats.bmi),
       accent: 'teal',
       progress: clampPercent(stats.bmi, 35)
@@ -64,7 +73,7 @@ export default function Dashboard(){
     {
       id: 'calories',
       label: 'Daily Calories',
-      value: loading ? '—' : formatValue(stats.requiredCalories),
+      value: loading ? '-' : formatValue(stats.requiredCalories),
       note: 'Estimated daily target',
       accent: 'blue',
       progress: clampPercent(stats.requiredCalories, 3200)
@@ -72,7 +81,7 @@ export default function Dashboard(){
     {
       id: 'protein',
       label: 'Protein Goal',
-      value: loading ? '—' : formatValue(stats.requiredProtein, 'g'),
+      value: loading ? '-' : formatValue(stats.requiredProtein, 'g'),
       note: 'Suggested daily intake',
       accent: 'green',
       progress: clampPercent(stats.requiredProtein, 180)
@@ -112,18 +121,18 @@ export default function Dashboard(){
           <div className="dashboard-orbit">
             <div className="dashboard-orbit-core">
               <span className="dashboard-orbit-label">Today</span>
-              <strong>{loading ? '—' : formatValue(stats.requiredCalories)}</strong>
+              <strong>{loading ? '-' : formatValue(today.calories)}</strong>
               <span className="dashboard-orbit-caption">calories</span>
             </div>
           </div>
           <div className="dashboard-hero-mini-stats">
             <div>
               <span>BMI</span>
-              <strong>{loading ? '—' : formatValue(stats.bmi)}</strong>
+              <strong>{loading ? '-' : formatValue(stats.bmi)}</strong>
             </div>
             <div>
               <span>Protein</span>
-              <strong>{loading ? '—' : formatValue(stats.requiredProtein, 'g')}</strong>
+              <strong>{loading ? '-' : formatValue(today.protein, 'g')}</strong>
             </div>
           </div>
         </div>

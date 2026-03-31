@@ -67,7 +67,7 @@ export default function Insights(){
           <div className="feature-panel-head">
             <div>
               <h3>Today&apos;s report</h3>
-              <p className="muted">A simple view of today&apos;s health markers and logged activity.</p>
+              <p className="muted">A simple view of what you have consumed so far today.</p>
             </div>
           </div>
 
@@ -75,37 +75,17 @@ export default function Insights(){
             <div className="feature-stack-list">
               <div className="feature-list-row">
                 <div>
-                  <strong>BMI</strong>
-                  <span>{todayInsight.bmi?.category || 'Not available'}</span>
+                  <strong>Calories consumed today</strong>
+                  <span>From today&apos;s logged meals</span>
                 </div>
-                <div className="feature-list-metric">{todayInsight.bmi?.value ?? '-'}</div>
+                <div className="feature-list-metric">{todayInsight.today?.calories ?? 0} kcal</div>
               </div>
               <div className="feature-list-row">
                 <div>
-                  <strong>Water intake</strong>
-                  <span>Today&apos;s daily log</span>
+                  <strong>Protein intake today</strong>
+                  <span>From today&apos;s logged meals</span>
                 </div>
-                <div className="feature-list-metric">{todayInsight.today?.waterIntake ?? 'Not logged'}</div>
-              </div>
-              <div className="feature-list-row">
-                <div>
-                  <strong>Sleep</strong>
-                  <span>Hours recorded</span>
-                </div>
-                <div className="feature-list-metric">{todayInsight.today?.sleepHours ?? 'Not logged'}</div>
-              </div>
-              <div className="feature-list-row">
-                <div>
-                  <strong>Steps</strong>
-                  <span>Movement logged</span>
-                </div>
-                <div className="feature-list-metric">{todayInsight.today?.steps ?? 'Not logged'}</div>
-              </div>
-              <div className="feature-empty compact">
-                <strong>Health report</strong>
-                <p className="muted">
-                  {todayInsight.healthReport?.summary || todayInsight.bmi?.message || 'No additional insight text is available yet.'}
-                </p>
+                <div className="feature-list-metric">{todayInsight.today?.protein ?? 0} g</div>
               </div>
             </div>
           ) : (
