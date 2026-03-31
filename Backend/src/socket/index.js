@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import cron from "node-cron";
-import { verifyToken } from "../utils/jwt.util.js";
+import tokenUtils from "../utils/gererateToken.js";
 import User from "../models/user.model.js";
 
 const connectedUsers = new Map();
@@ -35,7 +35,7 @@ const initSocket = (httpServer) => {
         return next(new Error("Authentication token required"));
       }
 
-      const decoded = verifyToken(token, process.env.ACCESS_TOKEN_SECRET);
+      const decoded = tokenUtils.verifyToken(token, process.env.ACCESS_TOKEN_SECRET);
       const user = await User.findById(decoded._id).select("name email");
       if (!user) return next(new Error("User not found"));
 
