@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Card from '../components/ui/Card'
-import Button from '../components/ui/Button'
 import { useAuth } from '../contexts/AuthContext'
 import * as api from '../utils/api'
 
@@ -194,12 +193,7 @@ export default function Guide() {
   const { user } = useAuth() || {}
   const [todayLog, setTodayLog] = useState(null)
   const [realtimePlan, setRealtimePlan] = useState(null)
-  const [planSource, setPlanSource] = useState('fallback')
-  const [planLoading, setPlanLoading] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [dailyDiet, setDailyDiet] = useState('')
-  const [medicalConditions, setMedicalConditions] = useState('')
-  const [focusGoal, setFocusGoal] = useState(null)
   const [activeRadarIndex, setActiveRadarIndex] = useState(0)
   const [boostFoodsByNutrient, setBoostFoodsByNutrient] = useState({})
   const [foodGuideLoading, setFoodGuideLoading] = useState(false)
@@ -209,10 +203,6 @@ export default function Guide() {
   const resolvedGoal = ['weight_loss', 'muscle_gain', 'maintain'].includes(user?.goal)
     ? user.goal
     : 'maintain'
-
-  useEffect(() => {
-    setFocusGoal(resolvedGoal)
-  }, [resolvedGoal])
 
   useEffect(() => {
     let mounted = true
@@ -237,25 +227,16 @@ export default function Guide() {
 
     let cancelled = false
     const timer = setTimeout(async () => {
-      setPlanLoading(true)
       try {
         const res = await api.getGuideActionPlan({
-          goal: focusGoal || resolvedGoal,
-          dailyDiet,
-          medicalConditions
+          goal: resolvedGoal
         })
 
         if (cancelled) return
         const plan = res?.data?.plan || null
         setRealtimePlan(plan && typeof plan === 'object' ? plan : null)
-        setPlanSource(res?.data?.source || 'fallback')
       } catch {
-        if (!cancelled) {
-          setRealtimePlan(null)
-          setPlanSource('fallback')
-        }
-      } finally {
-        if (!cancelled) setPlanLoading(false)
+        if (!cancelled) setRealtimePlan(null)
       }
     }, 500)
 
@@ -263,7 +244,7 @@ export default function Guide() {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [dailyDiet, focusGoal, loading, medicalConditions, resolvedGoal])
+  }, [loading, resolvedGoal])
 
   useEffect(() => {
     if (!activeFoodGuide) return undefined
@@ -319,7 +300,7 @@ export default function Guide() {
       heightCm: user?.heightCm,
       weightKg: user?.weightKg,
       activityLevel: user?.activityLevel,
-      goal: focusGoal || resolvedGoal,
+      goal: resolvedGoal,
       dietPreference: user?.dietPreference
     }
 
@@ -338,7 +319,7 @@ export default function Guide() {
     const hydrationGap = Math.max(0, hydrationTarget - waterMl)
     const sleepGap = sleepHours === null ? 8 : Math.max(0, 8 - sleepHours)
     const stepsGap = steps === null ? 8000 : Math.max(0, 8000 - steps)
-    const dietSignals = buildDietTags(dailyDiet, todayLog?.meals || [])
+    const dietSignals = buildDietTags('', todayLog?.meals || [])
 
     const nutrientGaps = [
       {
@@ -438,7 +419,7 @@ export default function Guide() {
       proteinGap,
       sleepHours,
       steps,
-      medicalConditions,
+      medicalConditions: '',
       dietSignals,
       dietPreference: profile.dietPreference
     })
@@ -457,7 +438,7 @@ export default function Guide() {
       recommendations,
       score: clamp(baseScore, 0, 100)
     }
-  }, [dailyDiet, focusGoal, medicalConditions, resolvedGoal, todayLog, user])
+  }, [resolvedGoal, todayLog, user])
 
   const summaryCards = [
     {
@@ -553,7 +534,7 @@ export default function Guide() {
           </p>
 
           <div className="guide-hero-badges">
-            <span className="dashboard-badge">{user?.goal ? prettify(focusGoal) : 'Set your goal in profile'}</span>
+            <span className="dashboard-badge">{user?.goal ? prettify(resolvedGoal) : 'Set your goal in profile'}</span>
             <span className="dashboard-badge">{loading ? 'Loading today’s log' : 'Built from your real app data'}</span>
           </div>
           <div className="guide-hero-meta">{focusLine}</div>
@@ -582,65 +563,6 @@ export default function Guide() {
             <span className="feature-stat-note">{card.note}</span>
           </Card>
         ))}
-      </section>
-
-      <section className="guide-section-stack">
-        <Card className="guide-context-panel">
-          <div className="feature-panel-head">
-            <div>
-              <h3>Quick context</h3>
-              <p className="muted">Saved profile fields are already included. Only add the extra details that affect today&apos;s guidance.</p>
-            </div>
-          </div>
-
-          <div className="guide-input-grid">
-            <div className="guide-goal-row">
-              {['weight_loss', 'muscle_gain', 'maintain'].map((goal) => (
-                <button
-                  key={goal}
-                  type="button"
-                  className={`feature-chip ${(focusGoal || resolvedGoal) === goal ? 'active' : ''}`}
-                  onClick={() => setFocusGoal(goal)}
-                >
-                  {prettify(goal)}
-                </button>
-              ))}
-            </div>
-
-            <div className="guide-form-grid">
-              <div className="guide-form-block">
-                <label htmlFor="guide-conditions" className="guide-label">Medical conditions</label>
-                <textarea
-                  id="guide-conditions"
-                  className="guide-textarea"
-                  value={medicalConditions}
-                  onChange={(e) => setMedicalConditions(e.target.value)}
-                  placeholder="Examples: PCOS, hypothyroid, hypertension, diabetes, anemia"
-                />
-              </div>
-
-              <div className="guide-form-block">
-                <label htmlFor="guide-diet" className="guide-label">Daily diet notes</label>
-                <textarea
-                  id="guide-diet"
-                  className="guide-textarea"
-                  value={dailyDiet}
-                  onChange={(e) => setDailyDiet(e.target.value)}
-                  placeholder="Describe usual meals, snacks, drinks, fruits, vegetables, and anything you want the guide to consider."
-                />
-              </div>
-            </div>
-
-            <div className="guide-inline-actions">
-              <Button onClick={() => { setDailyDiet(''); setMedicalConditions(''); setFocusGoal(resolvedGoal) }} variant="ghost">
-                Reset context
-              </Button>
-                <span className="muted">
-                  {planLoading ? 'Refreshing action plan...' : `Action plan source: ${planSource === 'ai' ? 'AI realtime' : 'App fallback'}`}
-                </span>
-            </div>
-          </div>
-        </Card>
       </section>
 
       <section className="guide-report-grid">

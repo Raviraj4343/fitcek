@@ -61,6 +61,10 @@ export default function Dashboard(){
   const [activityItems, setActivityItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [activePulse, setActivePulse] = useState(null)
+  const [activeBoostMetric, setActiveBoostMetric] = useState(null)
+  const [boostFoodsByNutrient, setBoostFoodsByNutrient] = useState({})
+  const [boostLoading, setBoostLoading] = useState(false)
+  const [boostError, setBoostError] = useState('')
 
   useEffect(() => {
     let mounted = true
@@ -186,6 +190,49 @@ export default function Dashboard(){
   const calorieGap = Math.max(0, (stats.requiredCalories || 0) - (today.calories || 0))
   const proteinGap = Math.max(0, (stats.requiredProtein || 0) - (today.protein || 0))
 
+  useEffect(() => {
+    if (!activeBoostMetric?.nutrient) return undefined
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setActiveBoostMetric(null)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activeBoostMetric?.nutrient])
+
+  useEffect(() => {
+    const nutrient = activeBoostMetric?.nutrient
+    if (!nutrient) return
+    if (boostFoodsByNutrient[nutrient]) return
+
+    let cancelled = false
+
+    async function loadBoostFoods() {
+      setBoostLoading(true)
+      setBoostError('')
+
+      try {
+        const diet = user?.dietPreference === 'veg' ? 'veg' : undefined
+        const res = await api.getBoostFoods({ nutrient, diet, limit: 6 })
+        if (cancelled) return
+        const list = Array.isArray(res?.data) ? res.data : []
+        setBoostFoodsByNutrient((prev) => ({ ...prev, [nutrient]: list }))
+      } catch {
+        if (!cancelled) setBoostError('Unable to load food suggestions right now.')
+      } finally {
+        if (!cancelled) setBoostLoading(false)
+      }
+    }
+
+    loadBoostFoods()
+    return () => { cancelled = true }
+  }, [activeBoostMetric?.nutrient, boostFoodsByNutrient, user?.dietPreference])
+
+  const boostFoods = activeBoostMetric?.nutrient
+    ? (boostFoodsByNutrient[activeBoostMetric.nutrient] || [])
+    : []
+
   const pulseRows = [
     {
       id: 'body-balance',
@@ -292,14 +339,32 @@ export default function Dashboard(){
             </div>
           </div>
           <div className="dashboard-hero-mini-stats">
-            <div>
-              <span>BMI</span>
-              <strong>{loading ? '-' : formatValue(stats.bmi)}</strong>
-            </div>
-            <div>
-              <span>Protein</span>
-              <strong>{loading ? '-' : formatValue(today.protein, 'g')}</strong>
-            </div>
+            <button
+              type="button"
+              className="dashboard-hero-mini-btn"
+              onClick={() => setActiveBoostMetric({
+                nutrient: 'energy',
+                title: 'Calorie remaining',
+                remaining: `${Math.round(calorieGap)} kcal remaining`
+              })}
+            >
+              <span>Calorie Remaining</span>
+              <strong>{loading ? '-' : formatValue(Math.round(calorieGap), ' kcal')}</strong>
+            </button>
+            <button
+              type="button"
+              className="dashboard-hero-mini-btn"
+              onClick={() => setActiveBoostMetric({
+                nutrient: 'protein',
+                title: 'Protein consumed today',
+                remaining: stats.requiredProtein
+                  ? `${Math.round(today.protein || 0)} g / ${Math.round(stats.requiredProtein)} g target`
+                  : `${Math.round(today.protein || 0)} g logged today`
+              })}
+            >
+              <span>Protein Consumed</span>
+              <strong>{loading ? '-' : formatValue(Math.round(today.protein || 0), 'g')}</strong>
+            </button>
           </div>
         </div>
       </section>
@@ -442,6 +507,55 @@ export default function Dashboard(){
                 <span>Profile goal</span>
                 <strong>{prettify(user?.goal || 'maintain')}</strong>
               </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {activeBoostMetric ? (
+        <div className="dashboard-modal-backdrop" onClick={() => setActiveBoostMetric(null)} aria-hidden="true">
+          <div
+            className="dashboard-modal guide-food-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dashboard-boost-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="dashboard-modal-close"
+              aria-label="Close food suggestions"
+              onClick={() => setActiveBoostMetric(null)}
+            >
+              ×
+            </button>
+
+            <div className="dashboard-modal-head">
+              <span className="dashboard-eyebrow">Quick Food Boost</span>
+              <h3 id="dashboard-boost-title">{activeBoostMetric.title}</h3>
+              <p className="muted">{activeBoostMetric.remaining}</p>
+            </div>
+
+            <div className="dashboard-modal-body">
+              {boostLoading ? <p className="muted">Loading food suggestions...</p> : null}
+              {boostError ? <p className="muted">{boostError}</p> : null}
+
+              {!boostLoading && !boostError ? (
+                <div className="guide-food-list">
+                  {boostFoods.length ? boostFoods.map((food) => (
+                    <div className="guide-food-item" key={`${activeBoostMetric.nutrient}-${food.name}`}>
+                      <div>
+                        <strong>{food.name}</strong>
+                        <span>{food.nameHindi || 'Popular in your food library'}</span>
+                      </div>
+                      <div className="guide-food-metric">
+                        <em>{food.highlight || '-'}</em>
+                        <small>{food.category} · {food.dietType === 'non_veg' ? 'non-veg' : 'veg'}</small>
+                      </div>
+                    </div>
+                  )) : <p className="muted">No strong matches found right now.</p>}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
