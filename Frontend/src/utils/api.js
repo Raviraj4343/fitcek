@@ -1,10 +1,54 @@
 const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
 const API_BASE = import.meta.env.VITE_API_BASE || (isLocalHost ? 'http://localhost:8000/api/v1' : '')
 
+const getApiOrigin = () => {
+  try {
+    return new URL(getApiBase()).origin
+  } catch {
+    return ''
+  }
+}
+
 function getApiBase(){
   if (API_BASE) return API_BASE
 
   throw new Error('Frontend API is not configured. Set VITE_API_BASE in your Vercel project environment variables.')
+}
+
+export function resolveMediaUrl(value){
+  if (!value) return value
+
+  const raw = String(value).trim()
+  if (!raw) return raw
+
+  if (/^https:\/\/res\.cloudinary\.com\//i.test(raw)) return raw
+
+  const apiOrigin = getApiOrigin()
+
+  if (raw.startsWith('/')) {
+    return apiOrigin ? `${apiOrigin}${raw}` : raw
+  }
+
+  try {
+    const parsed = new URL(raw)
+    const isLocalAssetHost = ['localhost', '127.0.0.1'].includes(parsed.hostname)
+
+    if (isLocalAssetHost && apiOrigin) {
+      return `${apiOrigin}${parsed.pathname}${parsed.search || ''}`
+    }
+
+    return raw
+  } catch {
+    return apiOrigin ? `${apiOrigin}/${raw.replace(/^\/+/, '')}` : raw
+  }
+}
+
+export function normalizeUser(user){
+  if (!user || typeof user !== 'object') return user
+  return {
+    ...user,
+    avatarUrl: resolveMediaUrl(user.avatarUrl)
+  }
 }
 
 async function request(path, { method = 'GET', body, token, headers = {} } = {}){
@@ -78,12 +122,18 @@ export function refreshToken(){
 }
 
 export function getMe(token){
-  return request('/auth/me', { method: 'GET', token })
+  return request('/auth/me', { method: 'GET', token }).then((res) => ({
+    ...res,
+    data: normalizeUser(res?.data)
+  }))
 }
 
 // User / Profile
 export function getProfile(){
-  return request('/user/profile')
+  return request('/user/profile').then((res) => ({
+    ...res,
+    data: normalizeUser(res?.data)
+  }))
 }
 
 export function uploadAvatar(file){
@@ -108,16 +158,25 @@ export function uploadAvatar(file){
       err.payload = data
       throw err
     }
-    return data
+    return {
+      ...data,
+      data: normalizeUser(data?.data)
+    }
   })
 }
 
 export function setupProfile(payload){
-  return request('/user/profile', { method: 'POST', body: payload })
+  return request('/user/profile', { method: 'POST', body: payload }).then((res) => ({
+    ...res,
+    data: normalizeUser(res?.data)
+  }))
 }
 
 export function updateProfile(payload){
-  return request('/user/profile', { method: 'PUT', body: payload })
+  return request('/user/profile', { method: 'PUT', body: payload }).then((res) => ({
+    ...res,
+    data: normalizeUser(res?.data)
+  }))
 }
 
 export function getHealthStats(){
