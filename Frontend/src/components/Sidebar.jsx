@@ -66,6 +66,16 @@ const authItems = [
         <path d="M5 19h14v2H5v-2Zm1-3.5 3.5-3.5 2.5 2.5L17 9l1.5 1.5-6.5 6.5-2.5-2.5L7.5 17 6 15.5Z" />
       </svg>
     )
+  },
+  {
+    to: '/guide',
+    label: 'Guide',
+    description: 'Personalized health report',
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 4h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2Zm2 4v2h8V8H8Zm0 4v2h5v-2H8Z" />
+      </svg>
+    )
   }
 ]
 

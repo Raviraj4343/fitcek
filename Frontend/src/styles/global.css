@@ -423,6 +423,91 @@ a:hover{color:var(--color-accent);text-decoration:underline}
 .feature-score-track{height:10px;border-radius:999px;background:rgba(2,132,199,0.08);overflow:hidden;margin-bottom:18px}
 .feature-score-track span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#0f6da8,#30b84f)}
 
+/* Guide */
+.guide-page{gap:24px}
+.guide-hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.85fr);align-items:center;gap:24px;padding:30px;overflow:hidden;position:relative;background:
+  radial-gradient(circle at 14% 18%, rgba(14,116,144,0.18), transparent 32%),
+  radial-gradient(circle at 84% 80%, rgba(48,184,79,0.14), transparent 28%),
+  linear-gradient(135deg, rgba(255,255,255,0.84), rgba(238,250,247,0.76))}
+.guide-hero::after{content:'';position:absolute;right:-60px;top:-50px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle, rgba(255,255,255,0.56), rgba(255,255,255,0));pointer-events:none}
+.guide-hero-copy h1{margin:0 0 12px;font-size:clamp(32px,4vw,52px);line-height:1.02;max-width:11ch}
+.guide-hero-copy p{max-width:620px;font-size:17px;line-height:1.65;margin:0}
+.guide-hero-badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.guide-hero-meta{margin-top:14px;font-size:14px;color:var(--color-muted);font-weight:600}
+.guide-hero-visual{display:grid;gap:16px;justify-items:center}
+.guide-score-orbit{width:min(100%,248px);aspect-ratio:1;border-radius:50%;padding:18px;background:
+  conic-gradient(from 220deg, rgba(7,89,133,0.96), rgba(2,126,154,0.96), rgba(48,184,79,0.9), rgba(255,255,255,0.2), rgba(7,89,133,0.96));
+  box-shadow:0 24px 50px rgba(6,54,70,0.18);
+  display:grid;place-items:center}
+.guide-score-core{width:100%;height:100%;border-radius:50%;background:rgba(250,254,255,0.95);display:grid;place-items:center;text-align:center;padding:18px}
+.guide-score-core span{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(7,89,133,0.7)}
+.guide-score-core strong{font-size:56px;line-height:1;color:var(--color-primary)}
+.guide-score-core small{font-size:13px;color:var(--color-muted)}
+.guide-score-caption{display:grid;gap:6px;max-width:280px;text-align:center}
+.guide-score-caption strong{font-size:20px;color:var(--color-text)}
+.guide-score-caption span{font-size:14px;line-height:1.6;color:var(--color-muted)}
+.guide-section-stack{display:grid;gap:16px}
+.guide-context-panel,.guide-report-panel{padding:22px}
+.guide-input-grid{display:grid;gap:16px}
+.guide-goal-row{display:flex;flex-wrap:wrap;gap:10px}
+.guide-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.guide-form-block{display:grid;gap:8px}
+.guide-label{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,89,133,0.72)}
+.guide-textarea{width:100%;min-height:160px;padding:16px 18px;border-radius:20px;border:1px solid rgba(7,89,133,0.12);background:rgba(255,255,255,0.82);font:inherit;color:var(--color-text);resize:vertical;box-shadow:inset 0 1px 0 rgba(255,255,255,0.72),0 8px 22px rgba(11,31,36,0.05)}
+.guide-textarea:focus{outline:none;border-color:var(--color-primary-600);box-shadow:0 10px 30px var(--focus-ring), inset 0 1px 0 rgba(255,255,255,0.84)}
+.guide-inline-actions{display:flex;justify-content:flex-end}
+.guide-inline-actions .btn-ghost{margin-top:0}
+.guide-report-grid{display:grid;gap:16px}
+.guide-radar-shell{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:18px;align-items:center;margin-bottom:18px}
+.guide-radar-card{position:relative;padding:20px 16px 16px;border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,0.8),rgba(240,250,248,0.78));border:1px solid rgba(255,255,255,0.72);box-shadow:0 12px 24px rgba(11,31,36,0.05);display:grid;place-items:center}
+.guide-radar-tooltip{display:grid;gap:4px;justify-items:center;margin-bottom:10px;text-align:center}
+.guide-radar-tooltip strong{font-size:16px;color:var(--color-text)}
+.guide-radar-tooltip span{font-size:13px;color:var(--color-muted);font-weight:700}
+.guide-radar-chart{width:100%;max-width:280px;height:auto;overflow:visible}
+.guide-radar-ring{fill:rgba(14,165,233,0.03);stroke:rgba(2,132,199,0.16);stroke-width:1}
+.guide-radar-axis{stroke:rgba(2,132,199,0.16);stroke-width:1}
+.guide-radar-area{fill:rgba(34,197,94,0.16);stroke:rgba(16,185,129,0.82);stroke-width:2}
+.guide-radar-dot{fill:#10b981;stroke:#ffffff;stroke-width:2;transition:transform .16s ease,filter .16s ease,fill .16s ease}
+.guide-radar-dot.active{fill:#0f766e;filter:drop-shadow(0 0 8px rgba(16,185,129,0.3))}
+.guide-radar-hit{fill:transparent;cursor:pointer}
+.guide-radar-hit:focus{outline:none}
+.guide-radar-label{fill:var(--color-text);font-size:10px;font-weight:800;letter-spacing:.02em;transition:fill .16s ease,transform .16s ease}
+.guide-radar-label.active{fill:var(--color-primary)}
+.guide-radar-legend{display:grid;gap:10px}
+.guide-radar-legend-item{display:grid;gap:12px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,0.68);border:1px solid rgba(255,255,255,0.64);transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease,background .16s ease;cursor:pointer}
+.guide-radar-legend-item.active{border-color:rgba(2,132,199,0.34);box-shadow:0 16px 30px rgba(2,132,199,0.12);transform:translateY(-1px) scale(1.01);background:linear-gradient(145deg,rgba(255,255,255,0.96),rgba(231,247,252,0.94))}
+.guide-radar-legend-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.guide-radar-legend-item strong{font-size:15px;color:var(--color-text);transition:color .16s ease}
+.guide-radar-legend-item.active strong{color:var(--color-primary)}
+.guide-radar-legend-meta{display:flex;align-items:center;gap:10px}
+.guide-radar-legend-meta span{font-size:13px;color:var(--color-muted);font-weight:700;transition:color .16s ease}
+.guide-radar-legend-item.active .guide-radar-legend-meta span{color:var(--color-text)}
+.guide-radar-legend-track{height:10px;border-radius:999px;background:rgba(2,132,199,0.08);overflow:hidden}
+.guide-radar-legend-track span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#0ea5e9,#22c55e);transition:width .18s ease,filter .18s ease,box-shadow .18s ease}
+.guide-radar-legend-item.active .guide-radar-legend-track{background:rgba(2,132,199,0.12)}
+.guide-radar-legend-item.active .guide-radar-legend-track span{filter:saturate(1.16);box-shadow:0 0 0 1px rgba(14,165,233,0.1),0 0 18px rgba(34,197,94,0.22)}
+.guide-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.guide-section-head.compact{margin-top:4px}
+.guide-section-head h3{margin:0 0 6px;font-size:22px}
+.guide-gap-list{display:grid;gap:14px}
+.guide-gap-card{padding:18px;border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,0.82),rgba(239,250,248,0.76));border:1px solid rgba(255,255,255,0.7);box-shadow:0 14px 26px rgba(11,31,36,0.05)}
+.guide-gap-list-compact{gap:12px}
+.guide-gap-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.guide-gap-top strong{display:block;font-size:18px;color:var(--color-text)}
+.guide-gap-top span{display:block;font-size:13px;color:var(--color-muted);margin-top:4px}
+.guide-gap-severity{font-size:12px;font-weight:800;color:var(--color-primary);text-align:right;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.76);border:1px solid rgba(2,132,199,0.12)}
+.guide-gap-track{height:10px;border-radius:999px;background:rgba(2,132,199,0.08);overflow:hidden}
+.guide-gap-track span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#0ea5e9,#22c55e)}
+.guide-gap-card p{margin:12px 0 0;color:var(--color-muted);line-height:1.6}
+.guide-kpi-stack{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.guide-kpi-card{padding:16px;border-radius:20px;background:rgba(255,255,255,0.74);border:1px solid rgba(255,255,255,0.68);box-shadow:0 12px 24px rgba(11,31,36,0.05)}
+.guide-kpi-card span{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(7,89,133,0.68);margin-bottom:8px}
+.guide-kpi-card strong{display:block;font-size:24px;line-height:1.2;color:var(--color-primary)}
+.guide-recommendations{display:grid;gap:12px}
+.guide-recommendations-stack{grid-template-columns:1fr}
+.guide-recommendation-card{padding:18px;border-radius:20px;background:linear-gradient(135deg,rgba(8,47,73,0.92),rgba(12,94,110,0.9) 55%, rgba(34,139,110,0.88));color:#f8fdff;box-shadow:0 18px 34px rgba(8,47,73,0.18)}
+.guide-recommendation-card span{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(222,244,255,0.78);margin-bottom:10px}
+.guide-recommendation-card strong{display:block;font-size:16px;line-height:1.6;font-weight:600}
 .subs-list{display:flex;flex-direction:column;gap:12px}
 .sub-row{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;border:1px solid rgba(2,6,23,0.03);background:var(--color-surface)}
 
@@ -438,6 +523,7 @@ a:hover{color:var(--color-accent);text-decoration:underline}
   .feature-hero{grid-template-columns:1fr}
   .feature-hero-aside{justify-items:start}
   .auth-page-card h2{max-width:none}
+  .guide-hero{grid-template-columns:1fr}
 }
 
 @media (max-width:800px){
@@ -461,6 +547,10 @@ a:hover{color:var(--color-accent);text-decoration:underline}
   .dashboard-grid .subs-card{grid-column:auto}
   .dashboard-star-cluster{min-height:auto;grid-template-columns:1fr;gap:14px}
   .dashboard-star-card{position:relative;width:100%;max-width:260px;transform:none !important}
+  .guide-radar-shell,
+  .guide-form-grid,
+  .guide-kpi-stack,
+  .guide-recommendations-stack{grid-template-columns:1fr}
 }
 
 /* Landing & auth responsive polish */
@@ -519,5 +609,11 @@ a:hover{color:var(--color-accent);text-decoration:underline}
   .auth-page-card{padding:20px}
   .auth-page-card h2{font-size:clamp(28px,8vw,36px)}
   .auth-page-row{align-items:flex-start;flex-direction:column}
+  .guide-hero{padding:22px}
+  .guide-score-orbit{width:220px}
+  .guide-score-core strong{font-size:48px}
+  .guide-gap-top,
+  .guide-radar-legend-top{flex-direction:column;align-items:flex-start}
+  .guide-inline-actions .btn-ghost{width:100%}
 }
 

@@ -16,6 +16,7 @@ import DailyLog from './pages/DailyLog'
 import Weight from './pages/Weight'
 import Foods from './pages/Foods'
 import Insights from './pages/Insights'
+import Guide from './pages/Guide'
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth()
@@ -52,6 +53,7 @@ export default function App(){
         <Route path="/weight" element={<RequireAuth><Weight /></RequireAuth>} />
         <Route path="/foods" element={<RequireAuth><Foods /></RequireAuth>} />
         <Route path="/insights" element={<RequireAuth><Insights /></RequireAuth>} />
+        <Route path="/guide" element={<RequireAuth><Guide /></RequireAuth>} />
         <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/design" element={<DesignSystem />} />
