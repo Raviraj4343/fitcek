@@ -119,7 +119,7 @@ export default function GuestNutritionCheck(){
       <section className="guest-check-hero card">
         <div className="guest-check-copy">
           <span className="feature-eyebrow">Guest Nutrition Check</span>
-          <h1>Track your whole day of food without signing in.</h1>
+          <h1>Track your whole day intake.</h1>
           <p className="muted">
             Add foods meal by meal in one simple flow. When your day is complete, click Analyze to open the final report in a popup.
           </p>

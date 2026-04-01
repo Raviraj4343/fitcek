@@ -8,8 +8,8 @@
   --brand-aq: #0077D9;
   --brand-tev: #39B54A;
   --color-bg: #DFFCF7;           /* greener mint base (soft, but slightly brighter center) */
-  --color-surface: #FFFFFF;      /* use white surfaces for stronger contrast */
-  --surface-contrast: #F3FBF9;   /* very light mint for subtle panels */
+  --color-surface: #E7EEF0;      /* darker neutral surface for elegant contrast */
+  --surface-contrast: #DCE6E9;   /* subtle deeper panel tone */
   --color-wealth: #C69A2D;       /* warm gold for wealth accents */
   --color-muted: #475E63;        /* slightly deeper muted text */
   --color-text: #042827;         /* deep near-black with green hint */
