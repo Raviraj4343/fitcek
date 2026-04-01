@@ -136,7 +136,8 @@ export default function Sidebar({ isOpen = false, onClose }){
       if (!reply) throw new Error('Empty reply from assistant.')
       setChatMessages((prev) => ([...prev, { id: Date.now() + 1, role: 'assistant', content: reply }]))
     } catch (err) {
-      setLiveError(err?.payload?.message || err?.message || 'Unable to get suggestion right now.')
+      const message = String(err?.payload?.message || err?.message || 'Unable to get suggestion right now.')
+      setLiveError(message.length > 220 ? `${message.slice(0, 220)}...` : message)
     } finally {
       setLiveLoading(false)
     }

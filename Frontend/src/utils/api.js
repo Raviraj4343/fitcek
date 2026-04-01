@@ -307,7 +307,54 @@ export function getGuideActionPlan(payload = {}){
 }
 
 export function getGuideLiveSuggestion(payload = {}){
-  return request('/insight/live-suggestion', { method: 'POST', body: payload })
+  const body = payload || {}
+  const toReplyText = (plan = {}) => {
+    const actionPlan = Array.isArray(plan?.actionPlan) ? plan.actionPlan : []
+    const riskFlags = Array.isArray(plan?.riskFlags) ? plan.riskFlags : []
+    const nutritionFocus = Array.isArray(plan?.nutritionFocus) ? plan.nutritionFocus : []
+    const trainingFocus = Array.isArray(plan?.trainingFocus) ? plan.trainingFocus : []
+    const recoveryFocus = Array.isArray(plan?.recoveryFocus) ? plan.recoveryFocus : []
+
+    const lines = []
+    if (actionPlan.length) {
+      lines.push('Action plan:')
+      actionPlan.slice(0, 3).forEach((item) => lines.push(`- ${String(item)}`))
+    }
+    if (nutritionFocus[0]) lines.push(`Nutrition focus: ${String(nutritionFocus[0])}`)
+    if (trainingFocus[0]) lines.push(`Training focus: ${String(trainingFocus[0])}`)
+    if (recoveryFocus[0]) lines.push(`Recovery focus: ${String(recoveryFocus[0])}`)
+    if (riskFlags[0]) lines.push(`Risk flag: ${String(riskFlags[0])}`)
+    return lines.join('\n').trim()
+  }
+
+  return request('/insight/live-suggestion', { method: 'POST', body })
+    .catch(async (err) => {
+      const routeMissing = err?.status === 404
+      if (!routeMissing) throw err
+
+      // Backward compatibility: some deployed backends may still use camelCase route.
+      try {
+        return await request('/insight/liveSuggestion', { method: 'POST', body })
+      } catch (legacyErr) {
+        if (legacyErr?.status !== 404) throw legacyErr
+
+        // Last-resort compatibility: convert action-plan payload into chat-like reply text.
+        const fallbackRes = await request('/insight/action-plan', {
+          method: 'POST',
+          body: {
+            goal: body?.goal
+          }
+        })
+
+        return {
+          success: true,
+          data: {
+            reply: toReplyText(fallbackRes?.data?.plan || {}),
+            source: 'action-plan-fallback'
+          }
+        }
+      }
+    })
 }
 
 // Simple local token helpers (optional — backend uses cookies)
