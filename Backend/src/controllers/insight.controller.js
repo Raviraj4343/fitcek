@@ -9,6 +9,7 @@ import {
   computeHealthReport,
 } from "../utils/HealthCalculation.js";
 import DailyLog from "../models/dailylog.model.js";
+import { generateRealtimeActionPlan } from "../utils/healthActionPlanAI.js";
 
 const getTodayIST = () =>
   new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
@@ -136,6 +137,108 @@ const getWeeklySummary = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, summary, "Weekly summary generated."));
 });
 
+const getActionPlan = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const today = getTodayIST();
+  const { dailyDiet = "", medicalConditions = "", goal } = req.body || {};
+
+  const activeGoal = goal || user.goal;
+
+  const log = await DailyLog.findOne({ userId: user._id, date: today });
+  const totals = {
+    totalCalories: log?.totalCalories || 0,
+    totalProtein: log?.totalProtein || 0,
+    sleepHours: log?.sleepHours ?? null,
+    steps: log?.steps ?? null,
+    waterIntake: log?.waterIntake ?? null,
+  };
+
+  const { bmi, category: bmiCategory } = calculateBMI(user.weightKg, user.heightCm);
+  const requiredCalories = calculateDailyCalories({ ...user.toObject(), goal: activeGoal });
+  const requiredProtein = calculateDailyProtein(user.weightKg, activeGoal);
+  const calorieGap = Math.max(0, requiredCalories - totals.totalCalories);
+  const proteinGap = Math.max(0, requiredProtein - totals.totalProtein);
+
+  let plan;
+  let source = "ai";
+
+  try {
+    plan = await generateRealtimeActionPlan({
+      goal: activeGoal,
+      dietPreference: user.dietPreference,
+      bmi,
+      bmiCategory,
+      requiredCalories,
+      requiredProtein,
+      actualCalories: totals.totalCalories,
+      actualProtein: totals.totalProtein,
+      sleepHours: totals.sleepHours,
+      steps: totals.steps,
+      waterIntake: totals.waterIntake,
+      calorieGap,
+      proteinGap,
+      dailyDiet,
+      medicalConditions,
+    });
+  } catch {
+    source = "fallback";
+    const report = computeHealthReport({ ...user.toObject(), goal: activeGoal }, totals);
+    const suggestions = (report.suggestions || []).map((s) => String(s)).filter(Boolean);
+    const warnings = (report.warnings || []).map((s) => String(s)).filter(Boolean);
+    const insights = (report.insights || []).map((s) => String(s)).filter(Boolean);
+
+    plan = {
+      actionPlan: [
+        suggestions[0] || "Anchor each meal with protein and vegetables.",
+        suggestions[1] || "Take two 10-minute walks after main meals.",
+        suggestions[2] || "Log sleep and hydration daily for better guidance.",
+      ],
+      riskFlags: [
+        warnings[0] || "Calorie or protein target may be off-track today.",
+        warnings[1] || "Low sleep or low activity can reduce recovery quality.",
+      ],
+      nutritionFocus: [
+        insights[0] || "Close calorie gap with whole-food carbs and lean protein.",
+        insights[1] || "Add one high-protein snack to improve daily total.",
+      ],
+      trainingFocus: [
+        "Target 7000+ steps with short post-meal walks.",
+        "Do beginner strength training three times weekly.",
+      ],
+      recoveryFocus: [
+        "Aim for seven to nine hours of sleep.",
+        "Hydrate steadily across the day, not only at night.",
+      ],
+    };
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        date: today,
+        source,
+        plan,
+        context: {
+          goal: activeGoal,
+          bmi,
+          bmiCategory,
+          requiredCalories,
+          requiredProtein,
+          actualCalories: totals.totalCalories,
+          actualProtein: totals.totalProtein,
+          calorieGap,
+          proteinGap,
+          sleepHours: totals.sleepHours,
+          steps: totals.steps,
+          waterIntake: totals.waterIntake,
+        },
+      },
+      "Action plan generated."
+    )
+  );
+});
+
 
 const computeHealthScore = ({ avgCalories, requiredCalories, avgProtein, requiredProtein, avgSleep }) => {
   let score = 100;
@@ -156,4 +259,4 @@ const computeHealthScore = ({ avgCalories, requiredCalories, avgProtein, require
   return Math.max(score, 0);
 };
 
-export { getTodayInsight, getWeeklySummary };
+export { getTodayInsight, getWeeklySummary, getActionPlan };
