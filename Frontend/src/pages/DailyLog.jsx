@@ -12,6 +12,10 @@ const createDraftItem = (item) => {
   const quantity = Number(item.quantity) || 1
   const totalCalories = Number(item.totalCalories) || 0
   const totalProtein = Number(item.totalProtein) || 0
+  const totalCarbs = Number(item.totalCarbs) || 0
+  const totalFats = Number(item.totalFats) || 0
+  const totalFiber = Number(item.totalFiber) || 0
+  const totalCalcium = Number(item.totalCalcium) || 0
 
   return {
     draftId: item.draftId || makeDraftId(),
@@ -20,6 +24,10 @@ const createDraftItem = (item) => {
     quantity,
     caloriesPerUnit: item.caloriesPerUnit ?? (quantity ? totalCalories / quantity : 0),
     proteinPerUnit: item.proteinPerUnit ?? (quantity ? totalProtein / quantity : 0),
+    carbsPerUnit: item.carbsPerUnit ?? (quantity ? totalCarbs / quantity : 0),
+    fatsPerUnit: item.fatsPerUnit ?? (quantity ? totalFats / quantity : 0),
+    fiberPerUnit: item.fiberPerUnit ?? (quantity ? totalFiber / quantity : 0),
+    calciumPerUnit: item.calciumPerUnit ?? (quantity ? totalCalcium / quantity : 0),
   }
 }
 
@@ -64,6 +72,10 @@ export default function DailyLog(){
         quantity,
         caloriesPerUnit: food.caloriesPerUnit || 0,
         proteinPerUnit: food.proteinPerUnit || 0,
+        carbsPerUnit: food.carbsPerUnit || 0,
+        fatsPerUnit: food.fatsPerUnit || 0,
+        fiberPerUnit: food.fiberPerUnit || 0,
+        calciumPerUnit: food.calciumPerUnit || 0,
       })
 
       if (existingIndex === -1) {

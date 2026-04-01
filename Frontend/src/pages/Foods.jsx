@@ -3,6 +3,9 @@ import Card from '../components/ui/Card'
 import FoodSearch from '../components/FoodSearch'
 import * as api from '../utils/api'
 
+const formatCategory = (value) => String(value || 'General').replace(/_/g, ' ')
+const formatDiet = (value) => String(value || 'Mixed').replace(/_/g, ' ')
+
 export default function Foods(){
   const [selected, setSelected] = useState(null)
   const [categories, setCategories] = useState([])
@@ -28,6 +31,8 @@ export default function Foods(){
     return foods.filter((food) => food.category === activeCategory)
   }, [foods, activeCategory])
 
+  const vitamins = Array.isArray(selected?.vitamins) ? selected.vitamins.join(', ') : ''
+
   return (
     <div className="page feature-page feature-foods">
       <section className="feature-hero card">
@@ -35,7 +40,7 @@ export default function Foods(){
           <span className="feature-eyebrow">Foods</span>
           <h1>Search and browse nutrition data</h1>
           <p className="muted">
-            Browse foods by category, search quickly, and check calories and protein without extra clutter.
+            Browse foods by category, search quickly, and review calories plus full composition details.
           </p>
         </div>
         <div className="feature-hero-aside">
@@ -52,7 +57,7 @@ export default function Foods(){
           <div className="feature-panel-head">
             <div>
               <h3>Search foods</h3>
-              <p className="muted">Search by food name to preview key nutrition details.</p>
+              <p className="muted">Search by food name to preview calories, macros, calcium, and vitamins.</p>
             </div>
           </div>
           <FoodSearch onSelect={(food) => setSelected(food)} />
@@ -60,6 +65,7 @@ export default function Foods(){
           {selected ? (
             <div className="food-detail-panel">
               <h3>{selected.name}</h3>
+              {selected.nameHindi ? <p className="muted">{selected.nameHindi}</p> : null}
               <div className="food-detail-grid">
                 <div className="feature-list-row">
                   <div><strong>Calories</strong><span>Per {selected.unit}</span></div>
@@ -70,19 +76,38 @@ export default function Foods(){
                   <div className="feature-list-metric">{selected.proteinPerUnit} g</div>
                 </div>
                 <div className="feature-list-row">
+                  <div><strong>Carbs</strong><span>Per {selected.unit}</span></div>
+                  <div className="feature-list-metric">{selected.carbsPerUnit || 0} g</div>
+                </div>
+                <div className="feature-list-row">
+                  <div><strong>Fats</strong><span>Per {selected.unit}</span></div>
+                  <div className="feature-list-metric">{selected.fatsPerUnit || 0} g</div>
+                </div>
+                <div className="feature-list-row">
+                  <div><strong>Fiber</strong><span>Per {selected.unit}</span></div>
+                  <div className="feature-list-metric">{selected.fiberPerUnit || 0} g</div>
+                </div>
+                <div className="feature-list-row">
+                  <div><strong>Calcium</strong><span>Per {selected.unit}</span></div>
+                  <div className="feature-list-metric">{selected.calciumPerUnit || 0} mg</div>
+                </div>
+                <div className="feature-list-row">
                   <div><strong>Category</strong><span>Catalog group</span></div>
-                  <div className="feature-list-metric">{selected.category || 'General'}</div>
+                  <div className="feature-list-metric">{formatCategory(selected.category)}</div>
                 </div>
                 <div className="feature-list-row">
                   <div><strong>Diet</strong><span>Food preference type</span></div>
-                  <div className="feature-list-metric">{selected.dietType || 'Mixed'}</div>
+                  <div className="feature-list-metric">{formatDiet(selected.dietType)}</div>
                 </div>
               </div>
+              {vitamins ? (
+                <div className="feature-inline-note">Vitamins: {vitamins}</div>
+              ) : null}
             </div>
           ) : (
             <div className="feature-empty compact">
               <strong>Select a food</strong>
-              <p className="muted">Search above to preview calories, protein, and category details.</p>
+              <p className="muted">Search above to preview calories, macros, calcium, vitamins, and category details.</p>
             </div>
           )}
         </Card>
@@ -104,7 +129,7 @@ export default function Foods(){
                 className={`feature-chip ${activeCategory === category ? 'active' : ''}`}
                 onClick={() => setActiveCategory(category)}
               >
-                {category}
+                {formatCategory(category)}
               </button>
             ))}
           </div>
@@ -114,7 +139,7 @@ export default function Foods(){
               <button key={food._id} type="button" className="feature-browser-row" onClick={() => setSelected(food)}>
                 <div>
                   <strong>{food.name}</strong>
-                  <span>{food.category || 'General'}</span>
+                  <span>{formatCategory(food.category)}</span>
                 </div>
                 <div className="feature-list-metric">{food.caloriesPerUnit} kcal</div>
               </button>

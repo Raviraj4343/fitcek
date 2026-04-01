@@ -124,7 +124,9 @@ export default function DailyLogEditor({
           <div className="meal-add-card">
             <div className="meal-add-copy">
               <strong>{pendingFood.name}</strong>
-              <span>{pendingFood.caloriesPerUnit} kcal per {pendingFood.unit}</span>
+              <span>
+                {pendingFood.caloriesPerUnit} kcal • {pendingFood.proteinPerUnit || 0} g protein • per {pendingFood.unit}
+              </span>
             </div>
             <div className="meal-add-controls">
               <input

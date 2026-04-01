@@ -62,14 +62,23 @@ export default function FoodSearch({ onSelect, placeholder = 'Search foods...' }
           {!loading && !error && q.trim() && results.length === 0 ? (
             <div className="muted suggestion-state">No foods found.</div>
           ) : null}
-          {results.map(r => (
-            <button key={r._id} type="button" className="suggestion" onClick={() => handleSelect(r)}>
-              <div className="s-left">
-                <div className="s-name">{r.name}</div>
-                <div className="muted">{r.caloriesPerUnit} kcal • {r.unit}</div>
-              </div>
-            </button>
-          ))}
+          {results.map(r => {
+            const meta = [
+              r.nameHindi,
+              `${r.caloriesPerUnit} kcal`,
+              `${r.proteinPerUnit} g protein`,
+              r.unit,
+            ].filter(Boolean).join(' • ')
+
+            return (
+              <button key={r._id} type="button" className="suggestion" onClick={() => handleSelect(r)}>
+                <div className="s-left">
+                  <div className="s-name">{r.name}</div>
+                  <div className="muted">{meta}</div>
+                </div>
+              </button>
+            )
+          })}
         </div>
       ) : null}
     </div>
