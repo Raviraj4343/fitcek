@@ -262,7 +262,7 @@ export default function Sidebar({ isOpen = false, onClose }){
       />
 
       {showLiveModal ? (
-        <div className="sidebar-live-modal-backdrop" onClick={() => setShowLiveModal(false)} aria-hidden="true">
+        <div className="sidebar-live-modal-backdrop" onClick={() => setShowLiveModal(false)}>
           <div
             className="sidebar-live-modal"
             role="dialog"

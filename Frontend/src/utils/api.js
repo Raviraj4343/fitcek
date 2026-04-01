@@ -308,6 +308,8 @@ export function getGuideActionPlan(payload = {}){
 
 export function getGuideLiveSuggestion(payload = {}){
   const body = payload || {}
+  const shouldFallbackToPlan = (status) => [404, 429, 502, 503, 504].includes(Number(status))
+
   const toReplyText = (plan = {}) => {
     const actionPlan = Array.isArray(plan?.actionPlan) ? plan.actionPlan : []
     const riskFlags = Array.isArray(plan?.riskFlags) ? plan.riskFlags : []
@@ -327,33 +329,38 @@ export function getGuideLiveSuggestion(payload = {}){
     return lines.join('\n').trim()
   }
 
+  const buildActionPlanFallback = async (reason = 'fallback') => {
+    const fallbackRes = await request('/insight/action-plan', {
+      method: 'POST',
+      body: {
+        goal: body?.goal
+      }
+    })
+
+    return {
+      success: true,
+      data: {
+        reply: toReplyText(fallbackRes?.data?.plan || {}),
+        source: reason
+      }
+    }
+  }
+
   return request('/insight/live-suggestion', { method: 'POST', body })
     .catch(async (err) => {
-      const routeMissing = err?.status === 404
-      if (!routeMissing) throw err
+      if (!shouldFallbackToPlan(err?.status)) throw err
 
       // Backward compatibility: some deployed backends may still use camelCase route.
-      try {
-        return await request('/insight/liveSuggestion', { method: 'POST', body })
-      } catch (legacyErr) {
-        if (legacyErr?.status !== 404) throw legacyErr
-
-        // Last-resort compatibility: convert action-plan payload into chat-like reply text.
-        const fallbackRes = await request('/insight/action-plan', {
-          method: 'POST',
-          body: {
-            goal: body?.goal
-          }
-        })
-
-        return {
-          success: true,
-          data: {
-            reply: toReplyText(fallbackRes?.data?.plan || {}),
-            source: 'action-plan-fallback'
-          }
+      if (Number(err?.status) === 404) {
+        try {
+          return await request('/insight/liveSuggestion', { method: 'POST', body })
+        } catch (legacyErr) {
+          if (!shouldFallbackToPlan(legacyErr?.status)) throw legacyErr
         }
       }
+
+      // Last-resort compatibility: convert action-plan payload into chat-like reply text.
+      return buildActionPlanFallback('action-plan-fallback')
     })
 }
 
