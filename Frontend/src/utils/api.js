@@ -1,5 +1,22 @@
 const isLocalHost = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
 const API_BASE = import.meta.env.VITE_API_BASE || (isLocalHost ? 'http://localhost:8000/api/v1' : '')
+const REQUEST_TIMEOUT_MS = 15000
+const MEMO_TTL_MS = 2 * 60 * 1000
+const memoCache = new Map()
+
+const memoGet = (key) => {
+  const entry = memoCache.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.ts > MEMO_TTL_MS) {
+    memoCache.delete(key)
+    return null
+  }
+  return entry.value
+}
+
+const memoSet = (key, value) => {
+  memoCache.set(key, { ts: Date.now(), value })
+}
 
 const getApiOrigin = () => {
   try {
@@ -53,13 +70,16 @@ export function normalizeUser(user){
 
 async function request(path, { method = 'GET', body, token, headers = {} } = {}){
   const apiBase = getApiBase()
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
   const init = {
     method,
     headers: {
       'Content-Type': 'application/json',
       ...headers
     },
-    credentials: 'include'
+    credentials: 'include',
+    signal: controller.signal
   }
   // If no explicit token provided, try reading a saved access token from localStorage
   if (!token) {
@@ -71,15 +91,26 @@ async function request(path, { method = 'GET', body, token, headers = {} } = {})
   if (body) init.body = JSON.stringify(body)
   if (token) init.headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch(`${apiBase}${path}`, init)
-  const data = await res.json().catch(()=>null)
-  if (!res.ok) {
-    const err = new Error(data?.message || 'Request failed')
-    err.status = res.status
-    err.payload = data
+  try {
+    const res = await fetch(`${apiBase}${path}`, init)
+    const data = await res.json().catch(()=>null)
+    if (!res.ok) {
+      const err = new Error(data?.message || 'Request failed')
+      err.status = res.status
+      err.payload = data
+      throw err
+    }
+    return data
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      const timeoutError = new Error('Request timed out. Please try again.')
+      timeoutError.status = 408
+      throw timeoutError
+    }
     throw err
+  } finally {
+    clearTimeout(timeoutId)
   }
-  return data
 }
 
 // Auth
@@ -232,12 +263,24 @@ export function searchFoods(q){
 }
 
 export function getFoodCategories(){
-  return request('/food/categories')
+  const key = 'food:categories'
+  const cached = memoGet(key)
+  if (cached) return Promise.resolve(cached)
+  return request('/food/categories').then((res) => {
+    memoSet(key, res)
+    return res
+  })
 }
 
 export function getAllFoods(query = {}){
+  const cacheKey = `food:all:${JSON.stringify(query || {})}`
+  const cached = memoGet(cacheKey)
+  if (cached) return Promise.resolve(cached)
   const qs = new URLSearchParams(query).toString()
-  return request(`/food${qs ? `?${qs}` : ''}`)
+  return request(`/food${qs ? `?${qs}` : ''}`).then((res) => {
+    memoSet(cacheKey, res)
+    return res
+  })
 }
 
 export function getFoodById(id){
