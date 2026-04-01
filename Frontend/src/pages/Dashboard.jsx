@@ -95,7 +95,7 @@ export default function Dashboard(){
     { label: 'Weight', value: user?.weightKg ? `${user.weightKg} kg` : 'Not set' }
   ]
 
-  const visualBars = [
+  const pulseRows = [
     { label: 'Body balance', value: metricCards[0].progress },
     { label: 'Energy target', value: metricCards[1].progress },
     { label: 'Recovery fuel', value: metricCards[2].progress }
@@ -163,15 +163,20 @@ export default function Dashboard(){
           <div className="dashboard-panel-header">
             <div>
               <h3>Wellness pulse</h3>
-              <p className="muted">A quick visual cluster of your core health markers.</p>
+              <p className="muted">A compact view of your key markers, without the visual clutter.</p>
             </div>
           </div>
 
-          <div className="dashboard-star-cluster" aria-hidden="true">
-            {visualBars.map((bar, index) => (
-              <div key={bar.label} className={`dashboard-star-card dashboard-star-${index + 1}`}>
-                <span>{bar.label}</span>
-                <strong>{bar.value}%</strong>
+          <div className="dashboard-pulse-list">
+            {pulseRows.map((row) => (
+              <div key={row.label} className="dashboard-pulse-row">
+                <div className="dashboard-pulse-copy">
+                  <span>{row.label}</span>
+                  <strong>{row.value}%</strong>
+                </div>
+                <div className="dashboard-pulse-track" aria-hidden="true">
+                  <span style={{ width: `${row.value}%` }} />
+                </div>
               </div>
             ))}
           </div>
@@ -188,7 +193,7 @@ export default function Dashboard(){
           <div className="dashboard-panel-header">
             <div>
               <h3>Profile snapshot</h3>
-              <p className="muted">Keep these details up to date for better recommendations.</p>
+              <p className="muted">A lean summary of the settings shaping your recommendations.</p>
             </div>
           </div>
 
