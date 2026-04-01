@@ -287,6 +287,12 @@ export function getFoodById(id){
   return request(`/food/${encodeURIComponent(id)}`)
 }
 
+export function getBoostFoods({ nutrient, diet, limit = 6 }){
+  const query = new URLSearchParams({ nutrient, limit: String(limit) })
+  if (diet) query.set('diet', diet)
+  return request(`/food/boost?${query.toString()}`)
+}
+
 // Insights
 export function getTodayInsight(){
   return request('/insight/today')
@@ -348,6 +354,7 @@ export default {
   getFoodCategories,
   getAllFoods,
   getFoodById,
+  getBoostFoods,
   // insight
   getTodayInsight,
   getWeeklySummary,

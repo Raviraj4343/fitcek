@@ -190,56 +190,6 @@ const getNutrientKey = (label = '') => {
   return null
 }
 
-const rankFoodsForNutrient = (foods = [], nutrientKey) => {
-  if (!nutrientKey || !Array.isArray(foods) || !foods.length) return []
-
-  const scored = foods
-    .map((food) => {
-      const protein = Number(food?.proteinPerUnit || 0)
-      const calories = Number(food?.caloriesPerUnit || 0)
-      const fiber = Number(food?.fiberPerUnit || 0)
-      const category = String(food?.category || '').toLowerCase()
-
-      if (!food?.name) return null
-
-      if (nutrientKey === 'protein') {
-        if (protein < 6) return null
-        const score = protein * 4 + fiber * 0.8 + calories * 0.05
-        return { food, score, highlight: `${protein} g protein per ${food.unit || 'serving'}` }
-      }
-
-      if (nutrientKey === 'energy') {
-        if (calories < 150) return null
-        if (category === 'snack') return null
-        const score = calories * 1.2 + protein * 1.6 + fiber * 1.2
-        return { food, score, highlight: `${calories} kcal per ${food.unit || 'serving'}` }
-      }
-
-      if (nutrientKey === 'fiber') {
-        if (fiber < 3) return null
-        const score = fiber * 5 + protein * 0.5 + calories * 0.03
-        return { food, score, highlight: `${fiber} g fiber per ${food.unit || 'serving'}` }
-      }
-
-      return null
-    })
-    .filter(Boolean)
-    .sort((a, b) => b.score - a.score)
-
-  const unique = []
-  const seen = new Set()
-
-  for (const row of scored) {
-    const key = String(row.food.name).toLowerCase()
-    if (seen.has(key)) continue
-    seen.add(key)
-    unique.push(row)
-    if (unique.length === 6) break
-  }
-
-  return unique
-}
-
 export default function Guide() {
   const { user } = useAuth() || {}
   const [todayLog, setTodayLog] = useState(null)
@@ -251,10 +201,9 @@ export default function Guide() {
   const [medicalConditions, setMedicalConditions] = useState('')
   const [focusGoal, setFocusGoal] = useState(null)
   const [activeRadarIndex, setActiveRadarIndex] = useState(0)
-  const [foodCatalog, setFoodCatalog] = useState([])
-  const [foodCatalogLoading, setFoodCatalogLoading] = useState(false)
-  const [foodCatalogError, setFoodCatalogError] = useState('')
-  const [foodCatalogAttempted, setFoodCatalogAttempted] = useState(false)
+  const [boostFoodsByNutrient, setBoostFoodsByNutrient] = useState({})
+  const [foodGuideLoading, setFoodGuideLoading] = useState(false)
+  const [foodGuideError, setFoodGuideError] = useState('')
   const [activeFoodGuide, setActiveFoodGuide] = useState(null)
 
   const resolvedGoal = ['weight_loss', 'muscle_gain', 'maintain'].includes(user?.goal)
@@ -328,32 +277,40 @@ export default function Guide() {
   }, [activeFoodGuide])
 
   useEffect(() => {
-    if (!activeFoodGuide || foodCatalog.length || foodCatalogLoading || foodCatalogAttempted) return
+    if (!activeFoodGuide?.nutrientKey) return
+    if (boostFoodsByNutrient[activeFoodGuide.nutrientKey]) return
 
     let cancelled = false
 
-    async function loadFoods() {
-      setFoodCatalogLoading(true)
-      setFoodCatalogAttempted(true)
-      setFoodCatalogError('')
+    async function loadBoostFoods() {
+      setFoodGuideLoading(true)
+      setFoodGuideError('')
 
       try {
         const diet = user?.dietPreference === 'veg' ? 'veg' : undefined
-        const res = await api.getAllFoods(diet ? { diet } : {})
+        const res = await api.getBoostFoods({
+          nutrient: activeFoodGuide.nutrientKey,
+          diet,
+          limit: 6
+        })
+
         if (cancelled) return
         const list = Array.isArray(res?.data) ? res.data : []
-        setFoodCatalog(list)
+        setBoostFoodsByNutrient((prev) => ({
+          ...prev,
+          [activeFoodGuide.nutrientKey]: list
+        }))
       } catch {
         if (cancelled) return
-        setFoodCatalogError('Unable to load food suggestions right now.')
+        setFoodGuideError('Unable to load food suggestions right now.')
       } finally {
-        if (!cancelled) setFoodCatalogLoading(false)
+        if (!cancelled) setFoodGuideLoading(false)
       }
     }
 
-    loadFoods()
+    loadBoostFoods()
     return () => { cancelled = true }
-  }, [activeFoodGuide, foodCatalog.length, foodCatalogLoading, foodCatalogAttempted, user?.dietPreference])
+  }, [activeFoodGuide?.nutrientKey, boostFoodsByNutrient, user?.dietPreference])
 
   const report = useMemo(() => {
     const profile = {
@@ -575,10 +532,9 @@ export default function Guide() {
   const aiNutritionFocus = Array.isArray(realtimePlan?.nutritionFocus) ? realtimePlan.nutritionFocus : []
   const aiTrainingFocus = Array.isArray(realtimePlan?.trainingFocus) ? realtimePlan.trainingFocus : []
   const aiRecoveryFocus = Array.isArray(realtimePlan?.recoveryFocus) ? realtimePlan.recoveryFocus : []
-  const suggestedFoods = useMemo(
-    () => rankFoodsForNutrient(foodCatalog, activeFoodGuide?.nutrientKey),
-    [foodCatalog, activeFoodGuide?.nutrientKey]
-  )
+  const suggestedFoods = activeFoodGuide?.nutrientKey
+    ? (boostFoodsByNutrient[activeFoodGuide.nutrientKey] || [])
+    : []
 
   const openFoodGuide = (gap) => {
     const nutrientKey = getNutrientKey(gap?.label)
@@ -914,19 +870,19 @@ export default function Guide() {
                 <strong>{prettify(user?.dietPreference || 'mixed')}</strong>
               </div>
 
-              {foodCatalogLoading ? <p className="muted">Loading food suggestions...</p> : null}
-              {foodCatalogError ? <p className="muted">{foodCatalogError}</p> : null}
+              {foodGuideLoading ? <p className="muted">Loading food suggestions...</p> : null}
+              {foodGuideError ? <p className="muted">{foodGuideError}</p> : null}
 
-              {!foodCatalogLoading && !foodCatalogError ? (
+              {!foodGuideLoading && !foodGuideError ? (
                 <div className="guide-food-list">
-                  {suggestedFoods.length ? suggestedFoods.map(({ food, highlight }) => (
+                  {suggestedFoods.length ? suggestedFoods.map((food) => (
                     <div className="guide-food-item" key={`${activeFoodGuide.nutrientKey}-${food.name}`}>
                       <div>
                         <strong>{food.name}</strong>
                         <span>{food.nameHindi || 'Popular in your food library'}</span>
                       </div>
                       <div className="guide-food-metric">
-                        <em>{highlight}</em>
+                        <em>{food.highlight || '-'}</em>
                         <small>{food.category} · {food.dietType === 'non_veg' ? 'non-veg' : 'veg'}</small>
                       </div>
                     </div>
