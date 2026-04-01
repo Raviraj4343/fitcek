@@ -24,6 +24,47 @@ const dedupeFoodsByName = (foods) => {
   return { uniqueFoods, skippedCount };
 };
 
+const hasMojibakeHint = (value = "") => /[ÃÂà][\x80-\xBF]?/.test(String(value));
+
+const decodeLatin1ToUtf8 = (value = "") =>
+  Buffer.from(String(value), "latin1").toString("utf8");
+
+const normalizeHindiText = (value = "") => {
+  if (!value) return value;
+
+  let normalized = String(value).normalize("NFC");
+
+  // Repair common mojibake only when the input looks corrupted.
+  if (hasMojibakeHint(normalized)) {
+    const repaired = decodeLatin1ToUtf8(normalized).normalize("NFC");
+
+    // Accept repair only if it produced Devanagari and removed mojibake hints.
+    if (/\p{Script=Devanagari}/u.test(repaired) && !hasMojibakeHint(repaired)) {
+      normalized = repaired;
+    }
+  }
+
+  return normalized;
+};
+
+const sanitizeFoodRecords = (foods) => {
+  let repairedCount = 0;
+
+  const sanitized = foods.map((food) => {
+    const currentHindi = food?.nameHindi || "";
+    const fixedHindi = normalizeHindiText(currentHindi);
+
+    if (fixedHindi !== currentHindi) repairedCount += 1;
+
+    return {
+      ...food,
+      nameHindi: fixedHindi,
+    };
+  });
+
+  return { sanitized, repairedCount };
+};
+
 const seed = async () => {
   try {
     await mongoose.connect(`${MONGODB_URI}/${DB_NAME}`);
@@ -32,7 +73,12 @@ const seed = async () => {
     await FoodModel.deleteMany({});
     console.log("Cleared existing food data");
 
-    const { uniqueFoods, skippedCount } = dedupeFoodsByName(Food);
+    const { sanitized, repairedCount } = sanitizeFoodRecords(Food);
+    if (repairedCount > 0) {
+      console.log(`Repaired encoding for ${repairedCount} Hindi food names.`);
+    }
+
+    const { uniqueFoods, skippedCount } = dedupeFoodsByName(sanitized);
     if (skippedCount > 0) {
       console.log(`Skipped ${skippedCount} duplicate food names from source data.`);
     }
