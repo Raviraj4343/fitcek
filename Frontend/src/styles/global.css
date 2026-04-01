@@ -386,6 +386,37 @@ a:hover{color:var(--color-accent);text-decoration:underline}
 .dashboard-modal-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 2px 2px;margin-top:2px;border-top:1px solid rgba(15,23,42,0.08)}
 .dashboard-modal-foot span{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,89,133,0.68)}
 .dashboard-modal-foot strong{font-size:16px;color:var(--color-primary);text-transform:capitalize}
+.confirm-modal-backdrop{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 18% 18%, rgba(191,219,254,0.18), transparent 32%), rgba(15,23,42,0.34);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.confirm-modal{position:relative;width:min(100%,520px);padding:22px;border-radius:28px;background:
+  linear-gradient(
+    140deg,
+    rgba(0,119,217,0.16) 0%,
+    rgba(255,255,255,0.95) 42%,
+    rgba(57,181,74,0.14) 100%
+  );border:1px solid rgba(255,255,255,0.76);box-shadow:0 30px 80px rgba(8,47,73,0.22);overflow:hidden}
+.confirm-modal::before{content:'';position:absolute;inset:auto auto -54px -42px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle, rgba(14,165,233,0.16), transparent 70%);pointer-events:none}
+.confirm-modal::after{content:'';position:absolute;inset:-70px -70px auto auto;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle, rgba(34,197,94,0.14), transparent 68%);pointer-events:none}
+.confirm-modal.danger{background:
+  linear-gradient(
+    140deg,
+    rgba(2,126,154,0.12) 0%,
+    rgba(255,255,255,0.95) 44%,
+    rgba(239,68,68,0.1) 100%
+  )}
+.confirm-modal > *{position:relative;z-index:1}
+.confirm-modal-close{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:14px;border:1px solid rgba(15,23,42,0.08);background:rgba(255,255,255,0.8);font:inherit;font-size:22px;line-height:1;color:var(--color-primary);cursor:pointer;box-shadow:0 12px 24px rgba(11,31,36,0.08)}
+.confirm-modal-eyebrow{display:inline-flex;align-items:center;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,0.74);border:1px solid rgba(2,132,199,0.12);font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(7,89,133,0.78)}
+.confirm-modal-head{padding-right:54px}
+.confirm-modal-head h3{margin:14px 0 10px;font-size:clamp(26px,3.4vw,34px);line-height:1.05;color:var(--color-text)}
+.confirm-modal-head .muted{margin:0;max-width:34ch}
+.confirm-modal-body{display:grid;gap:12px;margin-top:16px}
+.confirm-modal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.confirm-modal-card{padding:14px 15px;border-radius:18px;background:rgba(255,255,255,0.72);border:1px solid rgba(255,255,255,0.68);box-shadow:0 12px 24px rgba(11,31,36,0.05)}
+.confirm-modal-card span{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(7,89,133,0.68);margin-bottom:8px}
+.confirm-modal-card p{margin:0;font-size:14px;line-height:1.5;color:var(--color-text);font-weight:600}
+.confirm-modal-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(15,23,42,0.08)}
+.confirm-modal-actions .btn-primary,.confirm-modal-actions .btn-ghost{margin-top:0;min-height:48px;padding-left:18px;padding-right:18px}
+.confirm-modal-actions .btn-primary[disabled],.confirm-modal-actions .btn-ghost[disabled]{cursor:not-allowed;opacity:.7}
 .activity-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
 .activity-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:var(--surface-contrast);border:1px solid rgba(2,6,23,0.03)}
 .activity-text{font-size:14px}
@@ -627,6 +658,9 @@ a:hover{color:var(--color-accent);text-decoration:underline}
   .dashboard-modal-head h3{font-size:22px}
   .dashboard-modal-body{padding-right:2px}
   .dashboard-modal-foot{align-items:flex-start;flex-direction:column}
+  .confirm-modal{width:min(100%,560px);padding:18px}
+  .confirm-modal-grid{grid-template-columns:1fr}
+  .confirm-modal-actions{align-items:stretch;flex-direction:column-reverse}
   .feature-hero{padding:20px}
   .feature-orbit{width:200px}
   .feature-orbit strong{font-size:30px}

@@ -2,6 +2,7 @@ import React from 'react'
 import Brand from './Brand'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import ConfirmationModal from './ConfirmationModal'
 
 const baseItems = [
   {
@@ -82,6 +83,7 @@ const authItems = [
 export default function Sidebar({ isOpen = false, onClose }){
   const { user, logout } = useAuth() || {}
   const navigate = useNavigate()
+  const [showSignOutConfirm, setShowSignOutConfirm] = React.useState(false)
 
   const cls = ['sidebar']
   if (!isOpen) cls.push('closed')
@@ -89,83 +91,98 @@ export default function Sidebar({ isOpen = false, onClose }){
   const visibleItems = user ? [...baseItems, ...authItems] : baseItems
 
   return (
-    <aside
-      id="mobile-navigation"
-      className={cls.join(' ')}
-      aria-hidden={!isOpen}
-      aria-label="Primary navigation"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="sidebar-header">
-        <div className="brand"><Brand to="/" /></div>
-        <button
-          type="button"
-          className="sidebar-close"
-          aria-label="Close menu"
-          onClick={onClose}
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6-5.6 5.6L5 17.6l5.6-5.6L5 6.4 6.4 5Z" />
-          </svg>
-        </button>
-      </div>
+    <>
+      <aside
+        id="mobile-navigation"
+        className={cls.join(' ')}
+        aria-hidden={!isOpen}
+        aria-label="Primary navigation"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="sidebar-header">
+          <div className="brand"><Brand to="/" /></div>
+          <button
+            type="button"
+            className="sidebar-close"
+            aria-label="Close menu"
+            onClick={onClose}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6-5.6 5.6L5 17.6l5.6-5.6L5 6.4 6.4 5Z" />
+            </svg>
+          </button>
+        </div>
 
-      <div className="sidebar-body">
-        <div className="sidebar-section-label">Navigation</div>
-        <nav className="nav" role="navigation" aria-label="Main menu">
-          {visibleItems.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
-              onClick={onClose}
-            >
-              <span className="nav-item-icon">{item.icon}</span>
-              <span className="nav-item-copy">
-                <span className="nav-item-label">{item.label}</span>
-                <span className="nav-item-description">{item.description}</span>
-              </span>
-            </NavLink>
-          ))}
-        </nav>
-      </div>
+        <div className="sidebar-body">
+          <div className="sidebar-section-label">Navigation</div>
+          <nav className="nav" role="navigation" aria-label="Main menu">
+            {visibleItems.map(item => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+                onClick={onClose}
+              >
+                <span className="nav-item-icon">{item.icon}</span>
+                <span className="nav-item-copy">
+                  <span className="nav-item-label">{item.label}</span>
+                  <span className="nav-item-description">{item.description}</span>
+                </span>
+              </NavLink>
+            ))}
+          </nav>
+        </div>
 
-      <div className="sidebar-footer">
-        {user ? (
-          <div className="user-info" aria-label="Signed in account">
-            <div className="user-meta">
-              <div className="user-avatar" aria-hidden="true">
-                {user.avatarUrl ? (
-                  <img
-                    src={user.avatarUrl}
-                    alt=""
-                    className="user-avatar-image"
-                  />
-                ) : (
-                  (user.name || user.email || 'U').trim().charAt(0).toUpperCase()
-                )}
+        <div className="sidebar-footer">
+          {user ? (
+            <div className="user-info" aria-label="Signed in account">
+              <div className="user-meta">
+                <div className="user-avatar" aria-hidden="true">
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt=""
+                      className="user-avatar-image"
+                    />
+                  ) : (
+                    (user.name || user.email || 'U').trim().charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div>
+                  <div className="user-name">{user.name}</div>
+                  {user.email ? <div className="user-email">{user.email}</div> : null}
+                </div>
               </div>
-              <div>
-                <div className="user-name">{user.name}</div>
-                {user.email ? <div className="user-email">{user.email}</div> : null}
-              </div>
+              <button
+                className="btn-ghost"
+                onClick={() => setShowSignOutConfirm(true)}
+              >
+                Sign out
+              </button>
             </div>
-            <button
-              className="btn-ghost"
-              onClick={async () => {
-                await logout()
-                onClose && onClose()
-                navigate('/')
-              }}
-            >
-              Sign out
-            </button>
-          </div>
-        ) : (
-          <div className="sidebar-guest-note">Sign in to access logging, tracking, and insights.</div>
-        )}
-      </div>
-    </aside>
+          ) : (
+            <div className="sidebar-guest-note">Sign in to access logging, tracking, and insights.</div>
+          )}
+        </div>
+      </aside>
+
+      <ConfirmationModal
+        open={showSignOutConfirm}
+        tone="danger"
+        eyebrow="Secure Exit"
+        title="Sign out of your account?"
+        description="You'll be returned to the home page and can sign back in anytime."
+        confirmLabel="Sign out"
+        cancelLabel="Stay here"
+        onClose={() => setShowSignOutConfirm(false)}
+        onConfirm={async () => {
+          setShowSignOutConfirm(false)
+          await logout()
+          onClose && onClose()
+          navigate('/')
+        }}
+      />
+    </>
   )
 }

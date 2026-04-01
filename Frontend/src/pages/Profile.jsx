@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Input from '../components/ui/Input'
 import Button from '../components/ui/Button'
+import ConfirmationModal from '../components/ConfirmationModal'
 import * as api from '../utils/api'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -40,6 +41,7 @@ export default function Profile(){
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [status, setStatus] = useState('')
+  const [pendingSavePayload, setPendingSavePayload] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -95,6 +97,22 @@ export default function Profile(){
     setErrors({})
   }
 
+  const performSave = async (payload) => {
+    setSaving(true)
+    setStatus('')
+    try {
+      if (user?.profileCompleted) await api.updateProfile(payload)
+      else await api.setupProfile(payload)
+      await refresh()
+      setIsEditing(false)
+      setStatus('Profile saved successfully.')
+    } catch (err) {
+      setStatus(err?.payload?.message || err.message || 'Unable to save profile right now.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     const values = { ...form }
@@ -114,19 +132,7 @@ export default function Profile(){
       dietPreference: values.dietPreference
     }
 
-    setSaving(true)
-    setStatus('')
-    try {
-      if (user?.profileCompleted) await api.updateProfile(payload)
-      else await api.setupProfile(payload)
-      await refresh()
-      setIsEditing(false)
-      setStatus('Profile saved successfully.')
-    } catch (err) {
-      setStatus(err?.payload?.message || err.message || 'Unable to save profile right now.')
-    } finally {
-      setSaving(false)
-    }
+    setPendingSavePayload(payload)
   }
 
   const handleAvatarChange = (file) => {
@@ -173,72 +179,73 @@ export default function Profile(){
   const showEditableForm = isEditing || !user?.profileCompleted
 
   return (
-    <div className="page profile-page">
-      <div className="page-top profile-top">
-        <div>
-          <h1>Profile</h1>
-          <p className="muted">
-            {user?.profileCompleted
-              ? 'Keep your health details current so your dashboard and insights stay accurate.'
-              : 'Complete your profile to unlock tailored recommendations and tracking.'}
-          </p>
+    <>
+      <div className="page profile-page">
+        <div className="page-top profile-top">
+          <div>
+            <h1>Profile</h1>
+            <p className="muted">
+              {user?.profileCompleted
+                ? 'Keep your health details current so your dashboard and insights stay accurate.'
+                : 'Complete your profile to unlock tailored recommendations and tracking.'}
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="card profile-card profile-shell">
-        <section className="profile-hero">
-          <div className="profile-avatar-wrap">
-            <div className="profile-avatar">
-              {avatarPreview ? (
-                <img src={avatarPreview} alt={`${user?.name || 'User'} avatar`} className="profile-avatar-image" />
-              ) : (
-                <span className="profile-avatar-fallback" aria-hidden="true">
-                  {(user?.name || form.name || 'U').trim().charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
+        <div className="card profile-card profile-shell">
+          <section className="profile-hero">
+            <div className="profile-avatar-wrap">
+              <div className="profile-avatar">
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt={`${user?.name || 'User'} avatar`} className="profile-avatar-image" />
+                ) : (
+                  <span className="profile-avatar-fallback" aria-hidden="true">
+                    {(user?.name || form.name || 'U').trim().charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
 
-            <div className="profile-avatar-actions">
-              <div className="profile-avatar-head">
-                <div className="profile-avatar-copy">
-                  <h2>{user?.name || form.name || 'Your profile'}</h2>
-                  <p>{user?.email || 'Add your details and a photo to personalize your account.'}</p>
+              <div className="profile-avatar-actions">
+                <div className="profile-avatar-head">
+                  <div className="profile-avatar-copy">
+                    <h2>{user?.name || form.name || 'Your profile'}</h2>
+                    <p>{user?.email || 'Add your details and a photo to personalize your account.'}</p>
+                  </div>
+                  {user?.profileCompleted && !isEditing ? (
+                    <Button onClick={() => { setIsEditing(true); setStatus('') }} className="profile-edit-trigger">
+                      Edit
+                    </Button>
+                  ) : null}
                 </div>
-                {user?.profileCompleted && !isEditing ? (
-                  <Button onClick={() => { setIsEditing(true); setStatus('') }} className="profile-edit-trigger">
-                    Edit
+
+                <div className="profile-upload-row">
+                  <label htmlFor="avatar" className="profile-file-label">Choose image</label>
+                  <input id="avatar" className="profile-file-input" type="file" accept="image/*" onChange={(e) => handleAvatarChange(e.target.files?.[0])} />
+                  <span className="profile-file-name">{avatarFile ? avatarFile.name : 'PNG, JPG, or WEBP up to 5 MB'}</span>
+                </div>
+
+                <div className="profile-upload-actions">
+                  <Button onClick={handleAvatarUpload} disabled={uploading || !avatarFile}>
+                    {uploading ? 'Uploading...' : 'Upload avatar'}
                   </Button>
-                ) : null}
-              </div>
-
-              <div className="profile-upload-row">
-                <label htmlFor="avatar" className="profile-file-label">Choose image</label>
-                <input id="avatar" className="profile-file-input" type="file" accept="image/*" onChange={(e) => handleAvatarChange(e.target.files?.[0])} />
-                <span className="profile-file-name">{avatarFile ? avatarFile.name : 'PNG, JPG, or WEBP up to 5 MB'}</span>
-              </div>
-
-              <div className="profile-upload-actions">
-                <Button onClick={handleAvatarUpload} disabled={uploading || !avatarFile}>
-                  {uploading ? 'Uploading...' : 'Upload avatar'}
-                </Button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="profile-summary-grid">
-            {profileSummary.map((item) => (
-              <div key={item.label} className="profile-summary-card">
-                <span className="profile-summary-label">{item.label}</span>
-                <strong className="profile-summary-value">{item.value}</strong>
-              </div>
-            ))}
-          </div>
-        </section>
+            <div className="profile-summary-grid">
+              {profileSummary.map((item) => (
+                <div key={item.label} className="profile-summary-card">
+                  <span className="profile-summary-label">{item.label}</span>
+                  <strong className="profile-summary-value">{item.value}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        {status ? <div className="profile-status">{status}</div> : null}
+          {status ? <div className="profile-status">{status}</div> : null}
 
-        {showEditableForm ? (
-          <form className="profile-form profile-form-panel" onSubmit={handleSubmit} noValidate>
+          {showEditableForm ? (
+            <form className="profile-form profile-form-panel" onSubmit={handleSubmit} noValidate>
             <Input
               id="profile-name"
               label="Name"
@@ -322,38 +329,64 @@ export default function Profile(){
                 </Button>
               ) : null}
             </div>
-          </form>
-        ) : (
-          <section className="profile-overview">
-            <div className="profile-overview-grid">
-              <div className="profile-detail-card">
-                <span className="profile-detail-label">Full name</span>
-                <strong>{user?.name}</strong>
+            </form>
+          ) : (
+            <section className="profile-overview">
+              <div className="profile-overview-grid">
+                <div className="profile-detail-card">
+                  <span className="profile-detail-label">Full name</span>
+                  <strong>{user?.name}</strong>
+                </div>
+                <div className="profile-detail-card">
+                  <span className="profile-detail-label">Email</span>
+                  <strong>{user?.email}</strong>
+                </div>
+                <div className="profile-detail-card">
+                  <span className="profile-detail-label">Age</span>
+                  <strong>{user?.age || 'Not set'}</strong>
+                </div>
+                <div className="profile-detail-card">
+                  <span className="profile-detail-label">Gender</span>
+                  <strong>{prettify(user?.gender || 'Not set')}</strong>
+                </div>
+                <div className="profile-detail-card">
+                  <span className="profile-detail-label">Height</span>
+                  <strong>{user?.heightCm ? `${user.heightCm} cm` : 'Not set'}</strong>
+                </div>
+                <div className="profile-detail-card">
+                  <span className="profile-detail-label">Weight</span>
+                  <strong>{user?.weightKg ? `${user.weightKg} kg` : 'Not set'}</strong>
+                </div>
               </div>
-              <div className="profile-detail-card">
-                <span className="profile-detail-label">Email</span>
-                <strong>{user?.email}</strong>
-              </div>
-              <div className="profile-detail-card">
-                <span className="profile-detail-label">Age</span>
-                <strong>{user?.age || 'Not set'}</strong>
-              </div>
-              <div className="profile-detail-card">
-                <span className="profile-detail-label">Gender</span>
-                <strong>{prettify(user?.gender || 'Not set')}</strong>
-              </div>
-              <div className="profile-detail-card">
-                <span className="profile-detail-label">Height</span>
-                <strong>{user?.heightCm ? `${user.heightCm} cm` : 'Not set'}</strong>
-              </div>
-              <div className="profile-detail-card">
-                <span className="profile-detail-label">Weight</span>
-                <strong>{user?.weightKg ? `${user.weightKg} kg` : 'Not set'}</strong>
-              </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
+        </div>
       </div>
-    </div>
+
+      <ConfirmationModal
+        open={Boolean(pendingSavePayload)}
+        eyebrow={user?.profileCompleted ? 'Review Changes' : 'Complete Profile'}
+        title={user?.profileCompleted ? 'Save these profile updates?' : 'Save your profile now?'}
+        description={
+          user?.profileCompleted
+            ? 'Your dashboard, recommendations, and health tracking will refresh with these new details.'
+            : 'This will complete your profile and unlock personalized guidance across the app.'
+        }
+        confirmLabel={saving ? 'Saving...' : user?.profileCompleted ? 'Save changes' : 'Save profile'}
+        cancelLabel="Keep editing"
+        confirmDisabled={saving}
+        cancelDisabled={saving}
+        onClose={() => {
+          if (saving) return
+          setPendingSavePayload(null)
+        }}
+        onConfirm={async () => {
+          if (!pendingSavePayload || saving) return
+          const payload = pendingSavePayload
+          setPendingSavePayload(null)
+          await performSave(payload)
+        }}
+      />
+    </>
   )
 }
