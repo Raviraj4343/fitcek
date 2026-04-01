@@ -25,8 +25,7 @@ const getCalorieTarget = ({ age, gender, weightKg, heightCm, activityLevel, goal
 
   let bmr
   if (gender === 'male') bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5
-  else if (gender === 'female') bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161
-  else bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 78
+  else bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161
 
   const multiplier = {
     sedentary: 1.2,
@@ -44,7 +43,7 @@ const getCalorieTarget = ({ age, gender, weightKg, heightCm, activityLevel, goal
 
 const getProteinTarget = (weightKg, goal) => {
   if (!weightKg) return null
-  const factor = goal === 'muscle_gain' ? 1.6 : goal === 'weight_loss' ? 1.2 : 0.9
+  const factor = goal === 'muscle_gain' ? 1.5 : goal === 'weight_loss' ? 1.2 : 0.8
   return Math.round(weightKg * factor)
 }
 
@@ -288,14 +287,54 @@ export default function Guide() {
       })
     }
 
-    const completeness = [profile.age, profile.gender, profile.heightCm, profile.weightKg, profile.activityLevel].filter(Boolean).length
+    // Match backend computeHealthReport scoring exactly:
+    // BMI 25 + Nutrition 30 + Activity 20 + Sleep 15 + Hydration 10 = 100.
+    const bmiValue = Number(bmi.value || 0)
+    let bmiScore = 0
+    if (bmiValue >= 20 && bmiValue <= 24.9) bmiScore = 25
+    else if (bmiValue < 18.5) bmiScore = clamp((bmiValue / 18.5) * 25, 0, 24)
+    else bmiScore = clamp((1 - (bmiValue - 24.9) / 10) * 25, 0, 25)
+
+    const calorieDiffPct = calorieTarget > 0 ? (actualCalories - calorieTarget) / calorieTarget : 0
+    let calorieScore = 0
+    if (Math.abs(calorieDiffPct) <= 0.1) calorieScore = 15
+    else if (calorieDiffPct < -0.3 || calorieDiffPct > 0.3) calorieScore = 5
+    else calorieScore = clamp(15 - Math.abs(calorieDiffPct) * 50, 5, 15)
+
+    let proteinScore = 0
+    if (!proteinTarget || proteinTarget <= 0) proteinScore = 7.5
+    else if (proteinGap <= 0) proteinScore = 15
+    else proteinScore = clamp(15 * Math.max(0, 1 - proteinGap / proteinTarget), 0, 15)
+
+    const nutritionScore = calorieScore + proteinScore
+
+    const activityLevelMultiplier = {
+      sedentary: 0.6,
+      light: 0.8,
+      moderate: 1.0,
+      active: 1.1
+    }[profile.activityLevel] || 0.6
+
+    let stepsScore = 0
+    if (steps === null || steps === undefined) stepsScore = 6
+    else if (steps < 3000) stepsScore = 2
+    else if (steps < 7000) stepsScore = 8
+    else stepsScore = 15
+
+    const activityScore = clamp(stepsScore * activityLevelMultiplier, 0, 20)
+
+    let sleepScore = 0
+    if (sleepHours === null || sleepHours === undefined) sleepScore = 7
+    else if (sleepHours < 5) sleepScore = 2
+    else if (sleepHours < 7) sleepScore = 9
+    else if (sleepHours <= 9) sleepScore = 15
+    else sleepScore = 10
+
+    const hydrationScoreMap = { '<1L': 2, '1-2L': 6, '2-3L': 8, '3L+': 10 }
+    const hydrationScore = hydrationScoreMap[todayLog?.waterIntake] ?? 6
+
     const baseScore = Math.round(
-      completeness * 8 +
-      (bmi.value && bmi.value >= 18.5 && bmi.value < 25 ? 16 : 8) +
-      (calorieTarget ? clamp(28 - Math.round((calorieGap / Math.max(calorieTarget, 1)) * 40), 8, 28) : 10) +
-      (proteinTarget ? clamp(24 - Math.round((proteinGap / Math.max(proteinTarget, 1)) * 45), 6, 24) : 8) +
-      clamp(12 - Math.round(sleepGap * 2), 4, 12) +
-      clamp(12 - Math.round(stepsGap / 1000), 4, 12)
+      bmiScore + nutritionScore + activityScore + sleepScore + hydrationScore
     )
 
     const recommendations = buildRecommendations({

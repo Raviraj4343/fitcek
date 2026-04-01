@@ -9,6 +9,32 @@ const clampPercent = (value, max) => {
   return Math.max(0, Math.min(100, Math.round((Number(value) / max) * 100)))
 }
 
+const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, value))
+
+const getBodyBalanceScore = (bmi) => {
+  const numeric = Number(bmi)
+  if (!numeric) return 0
+  const idealBmi = 22
+  return clamp(Math.round(100 - Math.abs(numeric - idealBmi) * 12))
+}
+
+const toTitle = (value = '') =>
+  String(value)
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+
+const formatTimelineDate = (isoDate) => {
+  if (!isoDate) return 'Recently'
+  const now = new Date()
+  const date = new Date(`${isoDate}T00:00:00`)
+  if (Number.isNaN(date.getTime())) return isoDate
+
+  const dayDiff = Math.floor((now.setHours(0, 0, 0, 0) - date.getTime()) / 86400000)
+  if (dayDiff <= 0) return 'Today'
+  if (dayDiff === 1) return 'Yesterday'
+  return `${dayDiff}d ago`
+}
+
 const getBmiCategory = (bmi) => {
   const numeric = Number(bmi)
   if (!numeric) return 'Awaiting profile data'
@@ -32,6 +58,7 @@ export default function Dashboard(){
   const { user } = useAuth() || {}
   const [stats, setStats] = useState({ bmi: null, requiredCalories: null, requiredProtein: null })
   const [today, setToday] = useState({ calories: 0, protein: 0 })
+  const [activityItems, setActivityItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [activePulse, setActivePulse] = useState(null)
 
@@ -40,13 +67,68 @@ export default function Dashboard(){
 
     async function load(){
       try {
-        const [res, todayRes] = await Promise.all([
+        const [res, todayRes, historyRes, weightRes] = await Promise.all([
           api.getHealthStats(),
-          api.getTodayInsight().catch(() => null)
+          api.getTodayInsight().catch(() => null),
+          api.getHistoryLogs().catch(() => null),
+          api.getWeightHistory({ days: 7 }).catch(() => null)
         ])
         if (!mounted) return
         const data = res?.data || {}
         const todayData = todayRes?.data?.today || {}
+        const logs = Array.isArray(historyRes?.data) ? historyRes.data : []
+        const latestLog = logs[0] || null
+        const weightLogs = Array.isArray(weightRes?.data?.logs) ? weightRes.data.logs : []
+        const latestWeight = weightLogs.length ? weightLogs[weightLogs.length - 1] : null
+
+        const timeline = []
+
+        if (latestLog) {
+          const mealCount = Array.isArray(latestLog.meals)
+            ? latestLog.meals.reduce((sum, meal) => sum + (Array.isArray(meal.items) ? meal.items.length : 0), 0)
+            : 0
+
+          timeline.push({
+            id: `log-${latestLog.date}`,
+            text: `Logged ${Math.round(latestLog.totalCalories || 0)} kcal and ${Math.round(latestLog.totalProtein || 0)} g protein${mealCount ? ` across ${mealCount} food entries` : ''}.`,
+            time: formatTimelineDate(latestLog.date)
+          })
+
+          if (latestLog.steps) {
+            timeline.push({
+              id: `steps-${latestLog.date}`,
+              text: `Recorded ${latestLog.steps.toLocaleString()} steps.`,
+              time: formatTimelineDate(latestLog.date)
+            })
+          }
+
+          if (latestLog.sleepHours !== null && latestLog.sleepHours !== undefined) {
+            timeline.push({
+              id: `sleep-${latestLog.date}`,
+              text: `Logged ${latestLog.sleepHours} hours of sleep.`,
+              time: formatTimelineDate(latestLog.date)
+            })
+          }
+
+          if (latestLog.waterIntake) {
+            timeline.push({
+              id: `water-${latestLog.date}`,
+              text: `Water intake set to ${toTitle(latestLog.waterIntake)}.`,
+              time: formatTimelineDate(latestLog.date)
+            })
+          }
+        }
+
+        if (latestWeight?.weightKg) {
+          timeline.push({
+            id: `weight-${latestWeight.date}`,
+            text: `Weight updated to ${latestWeight.weightKg} kg.`,
+            time: formatTimelineDate(latestWeight.date)
+          })
+        }
+
+        setActivityItems(timeline.slice(0, 4))
+
         setStats({
           bmi: data.bmi ?? null,
           requiredCalories: data.requiredCalories ?? null,
@@ -74,7 +156,7 @@ export default function Dashboard(){
       value: loading ? '-' : formatValue(stats.bmi),
       note: getBmiCategory(stats.bmi),
       accent: 'teal',
-      progress: clampPercent(stats.bmi, 35)
+      progress: getBodyBalanceScore(stats.bmi)
     },
     {
       id: 'calories',
@@ -82,7 +164,7 @@ export default function Dashboard(){
       value: loading ? '-' : formatValue(stats.requiredCalories),
       note: 'Estimated daily target',
       accent: 'blue',
-      progress: clampPercent(stats.requiredCalories, 3200)
+      progress: stats.requiredCalories ? clampPercent(today.calories, stats.requiredCalories) : 0
     },
     {
       id: 'protein',
@@ -90,7 +172,7 @@ export default function Dashboard(){
       value: loading ? '-' : formatValue(stats.requiredProtein, 'g'),
       note: 'Suggested daily intake',
       accent: 'green',
-      progress: clampPercent(stats.requiredProtein, 180)
+      progress: stats.requiredProtein ? clampPercent(today.protein, stats.requiredProtein) : 0
     }
   ]
 
@@ -272,9 +354,20 @@ export default function Dashboard(){
 
           <div className="dashboard-callout">
             <strong>Recent activity</strong>
-            <p className="muted">
-              No recent activity is available yet. Once you start logging meals, weight, or daily data, your timeline will appear here.
-            </p>
+            {activityItems.length ? (
+              <ul className="activity-list">
+                {activityItems.map((item) => (
+                  <li key={item.id} className="activity-item">
+                    <div className="activity-text">{item.text}</div>
+                    <div className="activity-time">{item.time}</div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="muted">
+                No recent activity is available yet. Once you start logging meals, weight, or daily data, your timeline will appear here.
+              </p>
+            )}
           </div>
         </Card>
 
