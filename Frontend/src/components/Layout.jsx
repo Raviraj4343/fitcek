@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Navbar from './Navbar'
 
-const PUBLIC_PATHS = ['/', '/signin', '/signup', '/auth']
+const PUBLIC_PATHS = ['/', '/guest-nutrition-check', '/signin', '/signup', '/auth', '/forgot', '/reset-password']
 
 export default function Layout({ children }){
   const [sidebarOpen, setSidebarOpen] = useState(false)
