@@ -24,13 +24,6 @@ export default function Insights(){
   const score = weeklySummary?.overallScore
   const scorePercent = typeof score === 'number' ? Math.max(0, Math.min(100, score)) : 0
 
-  const todayCards = todayInsight ? [
-    { label: 'Calories today', value: todayInsight.today?.calories ?? 0, suffix: 'kcal' },
-    { label: 'Protein today', value: todayInsight.today?.protein ?? 0, suffix: 'g' },
-    { label: 'Target calories', value: todayInsight.requirements?.calories ?? 0, suffix: 'kcal' },
-    { label: 'Target protein', value: todayInsight.requirements?.protein ?? 0, suffix: 'g' }
-  ] : []
-
   return (
     <div className="page feature-page feature-insights">
       <section className="feature-hero card">
@@ -49,18 +42,6 @@ export default function Insights(){
           </div>
         </div>
       </section>
-
-      {todayCards.length > 0 ? (
-        <section className="feature-summary-grid">
-          {todayCards.map((card) => (
-            <Card key={card.label} className="feature-stat-card">
-              <span className="feature-stat-label">{card.label}</span>
-              <strong className="feature-stat-value">{loading ? '-' : card.value}</strong>
-              <span className="feature-stat-note">{card.suffix}</span>
-            </Card>
-          ))}
-        </section>
-      ) : null}
 
       <section className="feature-layout">
         <Card className="feature-main-panel">

@@ -14,16 +14,6 @@ const baseItems = [
         <path d="M4 13.5h6V20H4v-6.5Zm10-9.5h6V20h-6V4Zm-10 0h6v6.5H4V4Z" />
       </svg>
     )
-  },
-  {
-    to: '/profile',
-    label: 'Profile',
-    description: 'Personal details and goals',
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z" />
-      </svg>
-    )
   }
 ]
 
@@ -39,22 +29,12 @@ const authItems = [
     )
   },
   {
-    to: '/weight',
-    label: 'Weight',
-    description: 'Logs and trends over time',
+    to: '/guide',
+    label: 'Guide',
+    description: 'Personalized health report',
     icon: (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 5a7 7 0 0 0-7 7v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5a7 7 0 0 0-7-7Zm0 2a5 5 0 0 1 4.9 4H7.1A5 5 0 0 1 12 7Zm0 6a1.75 1.75 0 1 1-1.75 1.75A1.75 1.75 0 0 1 12 13Z" />
-      </svg>
-    )
-  },
-  {
-    to: '/foods',
-    label: 'Foods',
-    description: 'Search and browse nutrition data',
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M8 3c1.1 0 2 .9 2 2v4a2 2 0 1 1-4 0V5c0-1.1.9-2 2-2Zm7 0h2v7a4 4 0 0 1-3 3.87V21h-2v-7.13A4 4 0 0 1 9 10V3h2v7a2 2 0 1 0 4 0V3Z" />
+        <path d="M6 4h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2Zm2 4v2h8V8H8Zm0 4v2h5v-2H8Z" />
       </svg>
     )
   },
@@ -69,12 +49,32 @@ const authItems = [
     )
   },
   {
-    to: '/guide',
-    label: 'Guide',
-    description: 'Personalized health report',
+    to: '/foods',
+    label: 'Foods',
+    description: 'Search and browse nutrition data',
     icon: (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M6 4h12a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2Zm2 4v2h8V8H8Zm0 4v2h5v-2H8Z" />
+        <path d="M8 3c1.1 0 2 .9 2 2v4a2 2 0 1 1-4 0V5c0-1.1.9-2 2-2Zm7 0h2v7a4 4 0 0 1-3 3.87V21h-2v-7.13A4 4 0 0 1 9 10V3h2v7a2 2 0 1 0 4 0V3Z" />
+      </svg>
+    )
+  },
+  {
+    to: '/weight',
+    label: 'Weight',
+    description: 'Logs and trends over time',
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 5a7 7 0 0 0-7 7v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5a7 7 0 0 0-7-7Zm0 2a5 5 0 0 1 4.9 4H7.1A5 5 0 0 1 12 7Zm0 6a1.75 1.75 0 1 1-1.75 1.75A1.75 1.75 0 0 1 12 13Z" />
+      </svg>
+    )
+  },
+  {
+    to: '/profile',
+    label: 'Profile',
+    description: 'Personal details and goals',
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z" />
       </svg>
     )
   }

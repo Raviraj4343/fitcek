@@ -687,24 +687,6 @@ export default function Guide() {
             </div>
           </div>
 
-          <div className="guide-kpi-stack">
-            <div className="guide-kpi-card">
-              <span>Calories logged</span>
-              <strong>{report.actualCalories} kcal</strong>
-            </div>
-            <div className="guide-kpi-card">
-              <span>Protein logged</span>
-              <strong>{Math.round(report.actualProtein)} g</strong>
-            </div>
-            <div className="guide-kpi-card">
-              <span>Hydration</span>
-              <strong>{report.waterLabel}</strong>
-            </div>
-            <div className="guide-kpi-card">
-              <span>Recovery</span>
-              <strong>{report.sleepHours ?? '-'} h sleep</strong>
-            </div>
-          </div>
         </Card>
 
         <Card className="guide-report-panel">

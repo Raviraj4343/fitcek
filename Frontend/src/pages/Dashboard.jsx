@@ -48,11 +48,6 @@ const formatValue = (value, suffix = '') => {
   return `${value}${suffix}`
 }
 
-const prettify = (value = '') =>
-  String(value)
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase())
-
 const waterToLiters = (value) => {
   const map = { '<1L': 0.8, '1-2L': 1.5, '2-3L': 2.5, '3L+': 3.2 }
   return map[value] ?? null
@@ -64,7 +59,6 @@ export default function Dashboard(){
   const [today, setToday] = useState({ calories: 0, protein: 0 })
   const [activityItems, setActivityItems] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activePulse, setActivePulse] = useState(null)
   const [activeBoostMetric, setActiveBoostMetric] = useState(null)
   const [boostFoodsByNutrient, setBoostFoodsByNutrient] = useState({})
   const [boostLoading, setBoostLoading] = useState(false)
@@ -227,7 +221,6 @@ export default function Dashboard(){
   ]
 
   const calorieGap = Math.max(0, (stats.requiredCalories || 0) - (today.calories || 0))
-  const proteinGap = Math.max(0, (stats.requiredProtein || 0) - (today.protein || 0))
 
   useEffect(() => {
     if (!activeBoostMetric?.nutrient) return undefined
@@ -271,87 +264,6 @@ export default function Dashboard(){
   const boostFoods = activeBoostMetric?.nutrient
     ? (boostFoodsByNutrient[activeBoostMetric.nutrient] || [])
     : []
-
-  const pulseRows = [
-    {
-      id: 'body-balance',
-      label: 'Body balance',
-      value: metricCards[0].progress,
-      summary: stats.bmi ? `BMI ${stats.bmi} · ${getBmiCategory(stats.bmi)}` : 'Complete your profile to refine this score.',
-      modalTitle: 'How to improve body balance',
-      modalLead: user?.goal === 'weight_loss'
-        ? 'A steadier calorie deficit, enough protein, and daily movement will improve this score over time.'
-        : user?.goal === 'muscle_gain'
-          ? 'A steady surplus with strength training and consistent protein intake supports healthier body composition.'
-          : 'Consistency matters most here: stable meals, enough protein, and regular movement improve this marker.',
-      suggestions: [
-        'Build your main meals around lean protein plus vegetables and a controlled carb portion.',
-        user?.goal === 'weight_loss'
-          ? 'Aim for a 20 to 30 minute walk after lunch or dinner on most days.'
-          : 'Include 3 strength sessions each week to improve body composition quality.',
-        'Recheck weight, meals, and activity regularly so the dashboard can update this trend more accurately.'
-      ],
-      mealPlan: [
-        'Breakfast: 2 eggs or paneer bhurji with 2 rotis and salad.',
-        'Lunch: 1 palm-sized serving of protein, 1 cup rice or 2 rotis, and half a plate of vegetables.',
-        'Dinner: Keep protein high and avoid oversized late-night portions.'
-      ]
-    },
-    {
-      id: 'energy-target',
-      label: 'Energy target',
-      value: metricCards[1].progress,
-      summary: stats.requiredCalories
-        ? `${today.calories || 0} / ${stats.requiredCalories} kcal today`
-        : 'Set your profile to unlock an energy target.',
-      modalTitle: 'How to improve energy target',
-      modalLead: stats.requiredCalories
-        ? `You are about ${Math.round(calorieGap)} kcal below your current daily target. Add one or two balanced meals to close the gap.`
-        : 'Set your age, height, weight, and activity in Profile to generate a useful calorie target.',
-      suggestions: [
-        'Choose calorie-dense but balanced foods so you improve energy without relying on junk food.',
-        'Split the remaining calories into a snack and one stronger meal so it feels easier to complete.',
-        'Pair carbs with protein to improve energy and recovery together.'
-      ],
-      mealPlan: [
-        'Option 1: 1 bowl oats with milk, banana, and 1 tablespoon peanut butter.',
-        'Option 2: 2 rotis with dal and paneer or chicken curry.',
-        'Option 3: Greek yogurt or curd with fruit and a handful of nuts.'
-      ]
-    },
-    {
-      id: 'recovery-fuel',
-      label: 'Recovery fuel',
-      value: metricCards[2].progress,
-      summary: stats.requiredProtein
-        ? `${Math.round(today.protein || 0)} g / ${stats.requiredProtein} g protein`
-        : 'Set your profile to unlock a protein target.',
-      modalTitle: 'How to improve recovery fuel',
-      modalLead: stats.requiredProtein
-        ? `You are about ${Math.round(proteinGap)} g short of your protein target. One focused high-protein meal can lift this quickly.`
-        : 'Set your profile to generate a protein goal tailored to your weight and objective.',
-      suggestions: [
-        user?.dietPreference === 'veg'
-          ? 'Use paneer, tofu, Greek yogurt, dal, soy chunks, or whey to close the gap efficiently.'
-          : 'Use eggs, chicken, fish, Greek yogurt, paneer, or whey to close the gap efficiently.',
-        'Add protein to breakfast first because it is usually the easiest place to improve.',
-        'Try to spread protein across 3 meals instead of stacking it all at dinner.'
-      ],
-      mealPlan: user?.dietPreference === 'veg'
-        ? [
-            'Meal idea: 150 g paneer with 2 rotis gives a strong protein bump.',
-            'Snack idea: 1 scoop whey or 200 g Greek yogurt adds quick recovery protein.',
-            'Dinner add-on: 1 bowl dal plus curd can meaningfully lift your total.'
-          ]
-        : [
-            'Meal idea: 3 eggs plus toast is a simple protein boost.',
-            'Lunch idea: 120 to 150 g chicken or fish with rice or roti improves recovery fast.',
-            'Snack idea: Greek yogurt, milk, or whey can close the remaining gap.'
-          ]
-    }
-  ]
-
-  const selectedPulse = pulseRows.find((row) => row.id === activePulse) || null
 
   return (
     <div className="page dashboard dashboard-page">
@@ -432,32 +344,13 @@ export default function Dashboard(){
         <Card className="activity-card dashboard-panel">
           <div className="dashboard-panel-header">
             <div>
-              <h3>Wellness pulse</h3>
-              <p className="muted">A compact view of your key markers, without the visual clutter.</p>
+              <h3>Recent activity</h3>
+              <p className="muted">Your latest logs in one place.</p>
             </div>
           </div>
 
-          <div className="dashboard-pulse-list">
-            {pulseRows.map((row) => (
-              <button
-                key={row.id}
-                type="button"
-                className="dashboard-pulse-row"
-                onClick={() => setActivePulse(row.id)}
-              >
-                <div className="dashboard-pulse-copy">
-                  <span>{row.label}</span>
-                  <strong>{row.value}%</strong>
-                </div>
-                <div className="dashboard-pulse-track" aria-hidden="true">
-                  <span style={{ width: `${row.value}%` }} />
-                </div>
-              </button>
-            ))}
-          </div>
-
           <div className="dashboard-callout">
-            <strong>Recent activity</strong>
+            <strong>Timeline</strong>
             {activityItems.length ? (
               <ul className="activity-list">
                 {activityItems.map((item) => (
@@ -496,61 +389,6 @@ export default function Dashboard(){
           </div>
         </Card>
       </section>
-
-      {selectedPulse ? (
-        <div className="dashboard-modal-backdrop" onClick={() => setActivePulse(null)} aria-hidden="true">
-          <div
-            className="dashboard-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="dashboard-modal-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="dashboard-modal-close"
-              aria-label="Close recommendation"
-              onClick={() => setActivePulse(null)}
-            >
-              ×
-            </button>
-
-            <div className="dashboard-modal-head">
-              <span className="dashboard-eyebrow">Boost Guide</span>
-              <h3 id="dashboard-modal-title">{selectedPulse.modalTitle}</h3>
-              <p className="muted">{selectedPulse.modalLead}</p>
-            </div>
-
-            <div className="dashboard-modal-body">
-              <div className="dashboard-modal-highlight">
-                <span>{selectedPulse.label}</span>
-                <strong>{selectedPulse.summary}</strong>
-              </div>
-
-              <div className="dashboard-modal-grid">
-                <div className="dashboard-modal-card">
-                  <span>What to do</span>
-                  {selectedPulse.suggestions.map((item) => (
-                    <p key={item}>{item}</p>
-                  ))}
-                </div>
-
-                <div className="dashboard-modal-card">
-                  <span>Meal ideas</span>
-                  {selectedPulse.mealPlan.map((item) => (
-                    <p key={item}>{item}</p>
-                  ))}
-                </div>
-              </div>
-
-              <div className="dashboard-modal-foot">
-                <span>Profile goal</span>
-                <strong>{prettify(user?.goal || 'maintain')}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
 
       {activeBoostMetric ? (
         <div className="dashboard-modal-backdrop" onClick={() => setActiveBoostMetric(null)} aria-hidden="true">
