@@ -12,8 +12,16 @@ const mealItemSchema = new mongoose.Schema(
     quantity: { type: Number, required: true, min: 0.5 },
     caloriesPerUnit: { type: Number, required: true },
     proteinPerUnit: { type: Number, required: true },
+    carbsPerUnit: { type: Number, default: 0 },
+    fatsPerUnit: { type: Number, default: 0 },
+    fiberPerUnit: { type: Number, default: 0 },
+    calciumPerUnit: { type: Number, default: 0 },
     totalCalories: { type: Number },
     totalProtein: { type: Number },
+    totalCarbs: { type: Number },
+    totalFats: { type: Number },
+    totalFiber: { type: Number },
+    totalCalcium: { type: Number },
   },
   { _id: false }
 );
@@ -24,6 +32,12 @@ mealItemSchema.pre("save", function () {
   );
   this.totalProtein = parseFloat(
     (this.proteinPerUnit * this.quantity).toFixed(1)
+  );
+  this.totalCarbs = parseFloat((this.carbsPerUnit * this.quantity).toFixed(1));
+  this.totalFats = parseFloat((this.fatsPerUnit * this.quantity).toFixed(1));
+  this.totalFiber = parseFloat((this.fiberPerUnit * this.quantity).toFixed(1));
+  this.totalCalcium = parseFloat(
+    (this.calciumPerUnit * this.quantity).toFixed(1)
   );
 });
 
@@ -59,6 +73,22 @@ const dailyLogSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    totalCarbs: {
+      type: Number,
+      default: 0,
+    },
+    totalFats: {
+      type: Number,
+      default: 0,
+    },
+    totalFiber: {
+      type: Number,
+      default: 0,
+    },
+    totalCalcium: {
+      type: Number,
+      default: 0,
+    },
     waterIntake: {
       type: String,
       enum: Object.values(WATER_LEVELS),
@@ -85,22 +115,42 @@ dailyLogSchema.index({ userId: 1, date: 1 }, { unique: true });
 dailyLogSchema.pre("save", function () {
   let totalCalories = 0;
   let totalProtein = 0;
+  let totalCarbs = 0;
+  let totalFats = 0;
+  let totalFiber = 0;
+  let totalCalcium = 0;
 
   this.meals.forEach((mealGroup) => {
     mealGroup.items.forEach((item) => {
       const cal = (item.caloriesPerUnit || 0) * (item.quantity || 1);
       const prot = (item.proteinPerUnit || 0) * (item.quantity || 1);
+      const carbs = (item.carbsPerUnit || 0) * (item.quantity || 1);
+      const fats = (item.fatsPerUnit || 0) * (item.quantity || 1);
+      const fiber = (item.fiberPerUnit || 0) * (item.quantity || 1);
+      const calcium = (item.calciumPerUnit || 0) * (item.quantity || 1);
 
       item.totalCalories = parseFloat(cal.toFixed(1));
       item.totalProtein = parseFloat(prot.toFixed(1));
+      item.totalCarbs = parseFloat(carbs.toFixed(1));
+      item.totalFats = parseFloat(fats.toFixed(1));
+      item.totalFiber = parseFloat(fiber.toFixed(1));
+      item.totalCalcium = parseFloat(calcium.toFixed(1));
 
       totalCalories += cal;
       totalProtein += prot;
+      totalCarbs += carbs;
+      totalFats += fats;
+      totalFiber += fiber;
+      totalCalcium += calcium;
     });
   });
 
   this.totalCalories = Math.round(totalCalories);
   this.totalProtein = parseFloat(totalProtein.toFixed(1));
+  this.totalCarbs = parseFloat(totalCarbs.toFixed(1));
+  this.totalFats = parseFloat(totalFats.toFixed(1));
+  this.totalFiber = parseFloat(totalFiber.toFixed(1));
+  this.totalCalcium = parseFloat(totalCalcium.toFixed(1));
 });
 
 const DailyLog = mongoose.model("DailyLog", dailyLogSchema);

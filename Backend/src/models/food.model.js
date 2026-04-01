@@ -23,6 +23,30 @@ const foodSchema = new mongoose.Schema(
       required: [true, "Protein is required"],
       min: 0,
     },
+    carbsPerUnit: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    fatsPerUnit: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    fiberPerUnit: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    calciumPerUnit: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    vitamins: {
+      type: [String],
+      default: [],
+    },
     unit: {
       type: String,
       required: true,
@@ -36,6 +60,7 @@ const foodSchema = new mongoose.Schema(
         "dairy",
         "vegetable",
         "fruit",
+        "carb",
         "beverage",
         "snack",
         "other",
