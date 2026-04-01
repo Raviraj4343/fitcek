@@ -1,7 +1,33 @@
 import Food from "../models/food.model.js";
+import FoodData from "../data/foods.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
+
+const escapeRegex = (text = "") => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const filterStaticFoods = ({ diet, category, q }) => {
+  let items = FoodData;
+
+  if (diet === "veg") {
+    items = items.filter((item) => item.dietType === "veg");
+  }
+
+  if (category) {
+    items = items.filter((item) => item.category === category);
+  }
+
+  if (q) {
+    const term = q.toLowerCase();
+    items = items.filter((item) => {
+      const name = String(item.name || "").toLowerCase();
+      const nameHindi = String(item.nameHindi || "").toLowerCase();
+      return name.includes(term) || nameHindi.includes(term);
+    });
+  }
+
+  return items;
+};
 
 
 const getAllFoods = asyncHandler(async (req, res) => {
@@ -22,7 +48,12 @@ const getAllFoods = asyncHandler(async (req, res) => {
     filter.category = category;
   }
 
-  const foods = await Food.find(filter).sort({ category: 1, name: 1 });
+  let foods = await Food.find(filter).sort({ category: 1, name: 1 }).lean();
+
+  // Fallback for environments where seeding has not run yet.
+  if (!foods.length) {
+    foods = filterStaticFoods({ diet, category });
+  }
 
   return res
     .status(200)
@@ -37,18 +68,24 @@ const searchFoods = asyncHandler(async (req, res) => {
   }
 
   const term = q.trim();
+  const safeRegex = new RegExp(escapeRegex(term), "i");
 
-  const foods = await Food.find({
+  let foods = await Food.find({
     isActive: true,
     $or: [
-      { name: { $regex: term, $options: "i" } },
-      { nameHindi: { $regex: term, $options: "i" } },
+      { name: safeRegex },
+      { nameHindi: safeRegex },
     ],
   })
     .limit(10)
+    .lean()
     .select(
       "name nameHindi unit caloriesPerUnit proteinPerUnit carbsPerUnit fatsPerUnit fiberPerUnit calciumPerUnit vitamins category dietType"
     );
+
+  if (!foods.length) {
+    foods = filterStaticFoods({ q: term }).slice(0, 10);
+  }
 
   return res
     .status(200)
@@ -67,7 +104,11 @@ const getFoodById = asyncHandler(async (req, res) => {
 
 
 const getCategories = asyncHandler(async (req, res) => {
-  const categories = await Food.distinct("category", { isActive: true });
+  let categories = await Food.distinct("category", { isActive: true });
+
+  if (!categories.length) {
+    categories = [...new Set(FoodData.map((item) => item.category))];
+  }
 
   return res
     .status(200)

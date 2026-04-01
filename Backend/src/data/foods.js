@@ -253,6 +253,14 @@ const Food = [
   {"name":"Boiled Sweet Potato","nameHindi":"उबला शकरकंद","caloriesPerUnit":120,"proteinPerUnit":2,"carbsPerUnit":28,"fatsPerUnit":0,"fiberPerUnit":4,"calciumPerUnit":40,"vitamins":["Vitamin A"],"unit":"piece","category":"carb","dietType":"veg"},
   {"name":"Quinoa Bowl","nameHindi":"क्विनोआ बाउल","caloriesPerUnit":220,"proteinPerUnit":8,"carbsPerUnit":35,"fatsPerUnit":6,"fiberPerUnit":5,"calciumPerUnit":50,"vitamins":["Vitamin B"],"unit":"bowl","category":"grain","dietType":"veg"},
   {"name":"Brown Bread Sandwich (Protein)","nameHindi":"ब्राउन ब्रेड सैंडविच","caloriesPerUnit":240,"proteinPerUnit":12,"carbsPerUnit":30,"fatsPerUnit":8,"fiberPerUnit":4,"calciumPerUnit":80,"vitamins":["Vitamin B"],"unit":"piece","category":"grain","dietType":"veg"},
+  {"name":"Aloo Bhujia","nameHindi":"आलू भुजिया","caloriesPerUnit":180,"proteinPerUnit":3,"carbsPerUnit":25,"fatsPerUnit":8,"fiberPerUnit":3,"calciumPerUnit":20,"vitamins":["Vitamin C","Vitamin B6"],"unit":"bowl","category":"vegetable","dietType":"veg"},
+  {"name":"Dal","nameHindi":"दाल","caloriesPerUnit":160,"proteinPerUnit":8,"carbsPerUnit":20,"fatsPerUnit":4,"fiberPerUnit":6,"calciumPerUnit":40,"vitamins":["Vitamin B9"],"unit":"bowl","category":"protein","dietType":"veg"},
+  {"name":"Chana Chilli","nameHindi":"चना चिली","caloriesPerUnit":250,"proteinPerUnit":10,"carbsPerUnit":30,"fatsPerUnit":10,"fiberPerUnit":8,"calciumPerUnit":60,"vitamins":["Vitamin C"],"unit":"plate","category":"protein","dietType":"veg"},
+  {"name":"Aloo Gobhi","nameHindi":"आलू गोभी","caloriesPerUnit":180,"proteinPerUnit":4,"carbsPerUnit":20,"fatsPerUnit":9,"fiberPerUnit":5,"calciumPerUnit":40,"vitamins":["Vitamin C"],"unit":"bowl","category":"vegetable","dietType":"veg"},
+  {"name":"Paneer Biryani","nameHindi":"पनीर बिरयानी","caloriesPerUnit":420,"proteinPerUnit":14,"carbsPerUnit":50,"fatsPerUnit":16,"fiberPerUnit":3,"calciumPerUnit":180,"vitamins":["Vitamin B12"],"unit":"plate","category":"grain","dietType":"veg"},
+  {"name":"Pav Bhaji","nameHindi":"पाव भाजी","caloriesPerUnit":400,"proteinPerUnit":8,"carbsPerUnit":55,"fatsPerUnit":15,"fiberPerUnit":6,"calciumPerUnit":60,"vitamins":["Vitamin A","Vitamin C"],"unit":"plate","category":"snack","dietType":"veg"},
+  {"name":"Chicken Butter Masala","nameHindi":"चिकन बटर मसाला","caloriesPerUnit":420,"proteinPerUnit":20,"carbsPerUnit":10,"fatsPerUnit":32,"fiberPerUnit":2,"calciumPerUnit":50,"vitamins":["Vitamin B6"],"unit":"bowl","category":"protein","dietType":"non_veg"},
+  {"name":"Papdi Chaat","nameHindi":"पापड़ी चाट","caloriesPerUnit":300,"proteinPerUnit":6,"carbsPerUnit":40,"fatsPerUnit":14,"fiberPerUnit":4,"calciumPerUnit":60,"vitamins":["Vitamin C"],"unit":"plate","category":"snack","dietType":"veg"},
 ];
 
 export default Food;

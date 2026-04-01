@@ -40,9 +40,8 @@ const issueTokens = async (user, res) => {
   const accessToken = tokenUtils.generateAccessToken(user._id);
   const refreshToken = tokenUtils.generateRefreshToken(user._id);
 
-  // Persist hashed refresh token in DB
-  user.refreshToken = refreshToken;
-  await user.save({ validateBeforeSave: false });
+  // Persist refresh token without going through full document save lifecycle.
+  await User.findByIdAndUpdate(user._id, { $set: { refreshToken } }, { new: false });
 
   const accessMaxAgeMs = parseExpiryToMs(process.env.ACCESS_TOKEN_EXPIRATION, 24 * 60 * 60 * 1000);
   const refreshMaxAgeMs = parseExpiryToMs(process.env.REFRESH_TOKEN_EXPIRATION, 7 * 24 * 60 * 60 * 1000);
@@ -237,7 +236,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select("+password +refreshToken");
+  const user = await User.findOne({ email }).select("+password");
   if (!user) throw new ApiError(401, "Invalid email or password.");
 
   const isMatch = await user.isPasswordCorrect(password);
